@@ -1,17 +1,10 @@
-# egui template
+# Glavblock
 
-[![dependency status](https://deps.rs/repo/github/emilk/egui_template/status.svg)](https://deps.rs/repo/github/emilk/egui_template)
-[![Build Status](https://github.com/emilk/egui_template/workflows/CI/badge.svg)](https://github.com/emilk/egui_template/actions?workflow=CI)
+Game in [Samosbor](https://samosb.org/) setting. Bastard of economical strategy and visual novel.
 
-This is a template repo for [egui](https://github.com/emilk/egui/).
-
-The goal is for this to be the simplest way to get started writing a GUI app in Rust.
-
-You can compile your app natively or for the web, and share it using Github Pages.
+Powered by [egui](https://github.com/emilk/egui).
 
 ## Getting started
-
-Start by clicking "Use this template" at https://github.com/emilk/egui_template/ or follow [these instructions](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
 
 `src/app.rs` contains a simple example app. This is just to give some inspiration - most of it can be removed if you like.
 
@@ -43,8 +36,84 @@ The finished web app is found in the `docs/` folder (this is so that you can eas
 * `your_crate_bg.wasm`: What the Rust code compiles to.
 * `your_crate.js`: Auto-generated binding between Rust and JS.
 
-You can test the template app at <https://emilk.github.io/egui_template/>.
+# Docs
 
-## Updating egui
+Various game design digits in [spreadsheet](https://docs.google.com/spreadsheets/d/1PA18gcbbeIUVYdINowk_PRhOiLDzaMh0UOmgDVoPoxM/edit#gid=0)
 
-As of 2021, egui is in active development with frequent releases with breaking changes. [egui_template](https://github.com/emilk/egui_template/) will be updated in lock-step to always use the latest version of egui.
+# Roadmap
+
+- [ ] Economical strategy element
+  - [ ] Colony with stats
+    - [ ] People
+      - [ ] Profession
+        - [ ] Profession model
+        - [ ] Build power of particular human
+        - [ ] Change profession logic
+        - [ ] Experience (build power incrementaion)
+      - [ ] Equip
+        - [ ] Head slot
+        - [ ] Face slot
+        - [ ] Torso slot
+        - [ ] Legs slot
+    - [ ] Party Trust Level
+    - [ ] Resources
+      - [ ] Area
+        - [ ] Living
+        - [ ] Industrial
+        - [ ] Science
+        - [ ] Military
+        - [ ] Party
+        - [ ] Medical
+      - [ ] Slime (as chemical raw)
+      - [ ] Various garbage (scrap, concrete, components, bio raw, etc)
+    - [ ] Stationary objects (like buildings in regular strategy games)
+      - [ ] Bench
+      - [ ] Lathe
+      - [ ] FormatFurnace
+      - [ ] ChemLab
+      - [ ] BioLab
+      - [ ] Barrel
+      - [ ] ElectronicsLab
+      - [ ] MolecularPrinter
+      - [ ] NeuroTerminal
+      - [ ] OperatingRoom
+      - [ ] Germ
+      - [ ] AeroPump
+      - [ ] WaterPump
+      - [ ] VoidScanner
+    - [ ] Ecology
+      - [ ] Air imputity
+      - [ ] Water impurity
+    - [ ] Colony init
+  - [ ] Update-per-turn logic
+    - [ ] Stationary objects degradation
+    - [ ] Equip degradation
+    - [ ] Resources
+      - [ ] Production and consumption
+        - [ ] Income from stalkers
+        - [ ] Resources consumption
+        - [ ] Production tree
+      - [ ] Resources degradation
+  - [ ] [Macroquad](https://github.com/not-fl3/macroquad) interface
+    - [ ] "next turn" button and colony stats
+    - [ ] Control elements
+      - [ ] Tasks - what to build/make
+      - [ ] People list
+        - [ ] Profession control
+    - [ ] Human info interface
+        - [ ] Equip
+        - [ ] Statuses
+          - [ ] Hunger
+          - [ ] Morality
+          - [ ] Fatigue
+          - [ ] Sickness
+- [ ] Events (Visual novel element)
+- [ ] Content server
+  - [ ] Colony perks
+  - [ ] Quests
+  - [ ] Events
+    - [ ] Interface
+  - [ ] Script language integration ([gluon](https://github.com/gluon-lang/gluon)? [rhai](https://github.com/jonathandturner/rhai)? lua? [Something else](https://github.com/ruse-lang/langs-in-rust)?)
+  - [ ] Events api in core library
+  - [ ] Http (or maybe graphql?) server whitch serves events sets. Contextually.
+- [ ] CI/CD
