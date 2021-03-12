@@ -1,7 +1,8 @@
 [package]
-name = "egui_template"
+name = "glavblock"
 version = "0.1.0"
-authors = ["Emil Ernerfeldt <emilernerfeldt@gmail.com>"]
+authors = ["Artem Kanev <a-kanev@yandex.ru>"]
+description = "Bastard of text quest and econimical strategy in dark Samosbor setting."
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,8 +12,10 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 eframe = "0.10.0" # Gives us egui, epi and web+native backends
-
 serde = { version = "1", features = ["derive"], optional = true }
+legion = { version = "0.4.0", default-features = false, features = ["wasm-bindgen"]  }
+rand = { version = "0.8.2" }
+getrandom = { version = "0.2", features = ["js"] }
 
 [features]
 default = []
