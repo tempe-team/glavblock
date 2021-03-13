@@ -1,3 +1,4 @@
+use std::fmt;
 use std::collections::{
     HashMap,
 };
@@ -14,6 +15,18 @@ pub enum AreaType {
     Military, // казармы
     Industrial, // технические и производственные помещения. терминалы, распределительные узлы, насосы, чаны, станки.
     Party, // склады, образовательные помещения, детские сады, школы, залы партсобраний
+}
+
+impl fmt::Display for AreaType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AreaType::Living     => write!(f, "{}", "Жилое"),
+            AreaType::Science    => write!(f, "{}", "Научное"),
+            AreaType::Military   => write!(f, "{}", "Казармы"),
+            AreaType::Industrial => write!(f, "{}", "Производственное"),
+            AreaType::Party      => write!(f, "{}", "Партийное"),
+        }
+    }
 }
 
 
@@ -95,14 +108,15 @@ pub fn get_sufficent_room(
     type_: AreaType,
 ) -> Option<Entity> {
     let mut areas: HashMap<Entity, (AreaCapacity, AreaOccupied)> = HashMap::new();
+
     let mut areasq = <(
+        Entity,
         &AreaType,
         &AreaCapacity,
-        &Entity,
     )>::query();
-    for (_, capacity, entity) in areasq
+    for (entity, _, capacity) in areasq
         .iter(world)
-        .filter(|(artype,_, _)| **artype == type_)
+        .filter(|(_, artype, _)| **artype == type_)
     {
         areas.insert(*entity, (*capacity, AreaOccupied(0)));
     }

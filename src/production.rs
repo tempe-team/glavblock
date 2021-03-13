@@ -69,15 +69,19 @@ pub fn stationary_size (
 }
 
 /// Поставить герму + обустроить помещение
-/// Версия для типа World
 pub fn install_germ(
     world: &mut World,
     tier: Tier,
     purpose: AreaType,
 ) -> Entity {
+    let t: usize = match tier {
+        Tier::T1     => 1,
+        Tier::T2     => 2,
+        Tier::T3     => 3,
+        Tier::NoTier => 0,
+    };
     world.push((
         Germ(),
-        tier.clone(),
         StationaryStatus::Constructing,
         germ_requirements(tier),
         purpose,
@@ -210,7 +214,6 @@ pub struct TaskMeta {
     pub tier: Tier, // Тир исполнителя
     pub bp: BuildPower,
     pub stationary: Stationary, // на каком оборудовании надо выполнять работу
-    pub sci_spec: SciSpec,
 }
 
 /// Приоритет задачи
@@ -228,7 +231,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::BenchToolT2 => vec![
@@ -237,7 +239,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::BenchToolT3 => vec![
@@ -246,7 +247,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::FormatFurnace => vec![
@@ -255,7 +255,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT1 => vec![
@@ -264,7 +263,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT2 => vec![
@@ -273,7 +271,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT3 => vec![
@@ -282,7 +279,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::Barrel => vec![
@@ -291,7 +287,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::Rack => vec![
@@ -300,7 +295,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::NeuroTerminal => vec![
@@ -309,7 +303,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::None => Vec::new (),
@@ -328,7 +321,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Tier::T2 => vec![
@@ -337,7 +329,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Tier::T3 => vec![
@@ -346,7 +337,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
     }

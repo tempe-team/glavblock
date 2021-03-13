@@ -49,7 +49,6 @@ fn init_colony(world: &mut World) {
         AreaType::Science,
     );
 
-    let start_sci_spec = random_sci_spec();
     let cell_sciencists = install_germ(
         world,
         Tier::T1,
@@ -59,8 +58,6 @@ fn init_colony(world: &mut World) {
         world,
         Profession::Scientist,
         Tier::T1,
-        MilitaryDep::None,
-        start_sci_spec,
         cell_sciencists,
     );
 
@@ -76,46 +73,51 @@ fn init_colony(world: &mut World) {
                 world,
                 Profession::Worker,
                 Tier::T1,
-                MilitaryDep::None,
-                SciSpec::None,
                 cell,
             );
         }
     };
 
     // Ресурсы
-
-    put_resource(
-        world,
-        Resource::ConcentratT1,
-        RealUnits(100),
+    assert_eq!(
+        RealUnits(0),
+        put_resource(
+            world,
+            Resource::ConcentratT1,
+            RealUnits(1000),
+        ),
     );
-
-    put_resource(
-        world,
-        Resource::ConcentratT1,
-        RealUnits(1000),
+    assert_eq!(
+        RealUnits (0),
+        put_resource(
+            world,
+            Resource::ScrapT1,
+            RealUnits(500),
+        )
     );
-    put_resource(
-        world,
-        Resource::ScrapT1,
-        RealUnits(500),
+    assert_eq!(
+        RealUnits (0),
+        put_resource(
+            world,
+            Resource::ScrapT2,
+            RealUnits(50),
+        )
     );
-    put_resource(
-        world,
-        Resource::ScrapT2,
-        RealUnits(50),
+    assert_eq!(
+        RealUnits (0),
+        put_resource(
+            world,
+            Resource::PolymerT1,
+            RealUnits(100),
+        )
     );
-
-    put_resource(
-        world,
-        Resource::PolymerT1,
-        RealUnits(100),
-    );
-    put_resource(
-        world,
-        Resource::PolymerT2,
-        RealUnits(10),
+    assert_eq!(
+        RealUnits (0),
+        put_resource(
+            world,
+            Resource::PolymerT2,
+            RealUnits(10),
+        )
     );
 }
 
@@ -123,7 +125,8 @@ impl Default for GlavblockApp {
     fn default() -> Self {
         let mut world = World::default();
         let mut resources = Resources::default();
-        resources.insert(BuildPowerPool::new());
+        resources.insert(BuildPowerPool::new()
+        );
         init_colony(&mut world);
         Self {
             // Example stuff:
@@ -152,40 +155,92 @@ impl epi::App for GlavblockApp {
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
+    /// Put your widgets into a Symbol’s value as variable is void: SidePanel, Symbol’s value as variable is void: TopPanel, Symbol’s value as variable is void: CentralPanel, Symbol’s value as variable is void: Window or Symbol’s value as variable is void: Area.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.separator();
             ui.heading("Люди");
             let people: std::collections::HashMap<Profession, usize> = people_by_profession(&mut self.world);
 
-            people.iter().for_each(|(prof, count)| {
+            if let Some(cnt) = people.get(&Profession::Likvidator) {
                 ui.label(
-                    &format!("{}: {}", *prof, *count),
+                    &format!("{}: {}", Profession::Likvidator, cnt),
                 );
-            });
+            };
+
+            if let Some(cnt) = people.get(&Profession::Scientist) {
+                ui.label(
+                    &format!("{}: {}", Profession::Scientist, cnt),
+                );
+            };
+
+            if let Some(cnt) = people.get(&Profession::Worker) {
+                ui.label(
+                    &format!("{}: {}", Profession::Worker, cnt),
+                );
+            };
 
             ui.separator();
             ui.heading("Ресурсы");
-            for (res, count) in what_we_have(&mut self.world).iter() {
+            let resources_ = what_we_have(&mut self.world);
+            let mut resources: Vec<(&Resource, &RealUnits)> = resources_.iter().collect();
+            resources.sort_by(|(r1, _), (r2, _)| r1.cmp (r2));
+
+            for (res, cnt) in resources.iter() {
                 ui.label(
-                    &format!("{}: {}", *res, (*count).0),
+                    &format!("{}: {}", res, cnt.0),
                 );
-            };
+            }
+
+            ui.heading("Настроение");
             ui.separator();
             let mood: usize = block_mood(&mut self.world);
-                ui.label(
-                    &format!("Среднее настроение: {}", mood / people.len()),
-                );
+            ui.label(
+                &format!("Среднее настроение: {}", mood / people.len()),
+            );
             let satiety: Satiety = block_satiety(&mut self.world);
-                ui.label(
-                    &format!("Сытость: {}", satiety.0 as usize / people.len()),
-                );
+            ui.label(
+                &format!("Сытость: {}", satiety.0 as usize / people.len()),
+            );
 
             if ui.button("Смена").clicked() {
                 turn(&mut self.world, &mut self.resources);
             }
         });
 
+    }
+
+    fn setup(&mut self, _ctx: &egui::CtxRef) {}
+
+    fn warm_up_enabled(&self) -> bool {
+        false
+    }
+
+    fn on_exit(&mut self) {}
+
+    fn initial_window_size(&self) -> Option<egui::Vec2> {
+        None
+    }
+
+    fn auto_save_interval(&self) -> std::time::Duration {
+        std::time::Duration::from_secs(30)
+    }
+
+    fn is_resizable(&self) -> bool {
+        true
+    }
+
+    fn max_size_points(&self) -> egui::Vec2 {
+        // Some browsers get slow with huge WebGL canvases, so we limit the size:
+        egui::Vec2::new(1024.0, 2048.0)
+    }
+
+    fn clear_color(&self) -> egui::Rgba {
+        // NOTE: a bright gray makes the shadows of the windows look weird.
+        egui::Color32::from_rgb(12, 12, 12).into()
+    }
+
+    fn icon_data(&self) -> Option<epi::IconData> {
+        None
     }
 }

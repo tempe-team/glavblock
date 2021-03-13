@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::cmp::min;
 
 use legion::*;
-use legion::world::*;
 
 use crate::core::*;
 use crate::people::*;

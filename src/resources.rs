@@ -1,7 +1,7 @@
 use std::fmt;
 use std::hash::Hash;
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, PartialOrd, Ord)]
 pub enum Resource {
     BioRawT1, // загрязненное биологическое сырье.
     BioRawT2, // чистое биологическое сырье.
@@ -10,7 +10,7 @@ pub enum Resource {
     ScrapT2, // Лом цветных металлов
     ScrapT3, // Лом редких металлов
     Concrete, // Бетонная крошка
-    IsoConcrente, // Изобетон. Артефактный ресурс.
+    IsoConcrete, // Изобетон. Артефактный ресурс.
 
     TransparentSlime, // Прозрачная слизь
     BlackSlime, // Черная слизь
@@ -38,37 +38,33 @@ pub enum Resource {
 
 impl fmt::Display for Resource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let name = match self {
-            NoProf => "Тунеядец".to_string(),
-            BioRawT1 => "Загрязненное биосырье".to_string(),
-            BioRawT2 => "Биосырье".to_string(),
-            BioRawT3 => "Очищенное биосырье".to_string(),
-            ScrapT1 => "Чермет".to_string(),
-            ScrapT2 => "Цветмет".to_string(),
-            ScrapT3 => "Редкие металлы".to_string(),
-            TransparentSlime => "Прозрачная слизь".to_string(),
-            BlackSlime => "Черная слизь".to_string(),
-            BrownSlime => "Коричневая слизь".to_string(),
-            RedSlime   => "Красная слизь".to_string(),
-            PinkSlime  => "Розовая слизь".to_string(),
-            WhiteSlime => "Белая слизь".to_string(),
-
-            ComponentT1 => "Механический компонент".to_string(),
-            ComponentT2 => "Электронный компонент".to_string(),
-            ComponentT3 => "Суперкомпонент".to_string(),
-
-            ReagentT1 => "Экоцид".to_string(),
-            ReagentT2 => "Компониум".to_string(),
-            ReagentT3 => "Сталий".to_string(),
-
-            PolymerT1 => "Синтетическая ткань".to_string(),
-            PolymerT2 => "Пластик".to_string(),
-            PolymerT3 => "Суперпластик".to_string(),
-
-            ConcentratT1 => "Белый концентрат".to_string(),
-            ConcentratT2 => "Черный концентрат".to_string(),
-            ConcentratT3 => "Красный концентрат".to_string(),
-        };
-        write!(f, "{}", name)
+        match self {
+            Resource::BioRawT1         => write!(f, "{}", "Загрязненное биосырье"),
+            Resource::BioRawT2         => write!(f, "{}", "Биосырье"),
+            Resource::BioRawT3         => write!(f, "{}", "Очищенное биосырье"),
+            Resource::ScrapT1          => write!(f, "{}", "Чермет"),
+            Resource::ScrapT2          => write!(f, "{}", "Цветмет"),
+            Resource::ScrapT3          => write!(f, "{}", "Редкие металлы"),
+            Resource::TransparentSlime => write!(f, "{}", "Прозрачная слизь"),
+            Resource::BlackSlime       => write!(f, "{}", "Черная слизь"),
+            Resource::BrownSlime       => write!(f, "{}", "Коричневая слизь"),
+            Resource::RedSlime         => write!(f, "{}", "Красная слизь"),
+            Resource::PinkSlime        => write!(f, "{}", "Розовая слизь"),
+            Resource::WhiteSlime       => write!(f, "{}", "Белая слизь"),
+            Resource::ComponentT1      => write!(f, "{}", "Механический компонент"),
+            Resource::ComponentT2      => write!(f, "{}", "Электронный компонент"),
+            Resource::ComponentT3      => write!(f, "{}", "Суперкомпонент"),
+            Resource::Concrete      => write!(f, "{}", "Бетон"),
+            Resource::IsoConcrete      => write!(f, "{}", "ИзоБетон"),
+            Resource::ReagentT1        => write!(f, "{}", "Экоцид"),
+            Resource::ReagentT2        => write!(f, "{}", "Компониум"),
+            Resource::ReagentT3        => write!(f, "{}", "Сталий"),
+            Resource::PolymerT1        => write!(f, "{}", "Синтетическая ткань"),
+            Resource::PolymerT2        => write!(f, "{}", "Пластик"),
+            Resource::PolymerT3        => write!(f, "{}", "Суперпластик"),
+            Resource::ConcentratT1     => write!(f, "{}", "Белый концентрат"),
+            Resource::ConcentratT2     => write!(f, "{}", "Черный концентрат"),
+            Resource::ConcentratT3     => write!(f, "{}", "Красный концентрат"),
+        }
     }
 }
