@@ -117,7 +117,7 @@ pub fn clean_up_completed_tasks(
     _resources: &mut Resources,
 ) {
     let mut to_delete:HashSet<Entity> = HashSet::new();
-    let mut query = <(&Entity, &TaskMeta)>::query();
+    let mut query = <(Entity, &TaskMeta)>::query();
     for (entity, task) in query.iter(world) {
         if task.bp == BuildPower (0) {
             // Весь требуемый билдпавер влит в эту задачу
@@ -146,7 +146,7 @@ pub fn setup_completed_stationaries(
     for BelongsToStationary(entity) in under_construction_q.iter (world) {
         under_construction.insert(*entity);
     };
-    let mut stats_query = <(&Entity, &mut StationaryStatus)>::query();
+    let mut stats_query = <(Entity, &mut StationaryStatus)>::query();
     // стационарки которые строятся и не введены в эксплуатацию
     for (entity, status) in stats_query
         .iter_mut(world)
@@ -170,7 +170,7 @@ pub fn hunger_tick(
 ) {
     let mut died_by_hunger: Vec<Entity> = Vec::new();
     let mut query = <(
-        &Entity,
+        Entity,
         &mut Satiety,
         &mut Mood,
     )>::query();
@@ -181,7 +181,7 @@ pub fn hunger_tick(
         }
         // ниже ста - голод - минус настроение
         if sat.0 < 100 {
-            mood.0 -= 1;
+            mood.0.checked_sub(1);
         }
     }
     for e in died_by_hunger.iter() {
@@ -212,7 +212,7 @@ pub fn consume_concentrat(
         if t1_conc_amount.0 <= 0 {
             // Не дали пожрать. Настроение
             // от такого ухудшается.
-            mood.0 -= 1;
+            mood.0.checked_sub(1);
         } else {
             t1_conc_amount.0 -= 1;
             t1_conc_writeroff += 1;
@@ -220,9 +220,17 @@ pub fn consume_concentrat(
             sat.0 += 10;
         }
     }
-    writeoff(
+    let rest = writeoff(
         world,
         Resource::ConcentratT1,
         RealUnits(t1_conc_writeroff),
     );
+    // не получилось списать все. Ну ок, списываем что есть.
+    if rest.0 != 0 {
+        writeoff(
+            world,
+            Resource::ConcentratT1,
+            rest,
+        );
+    }
 }

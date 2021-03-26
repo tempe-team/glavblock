@@ -92,14 +92,6 @@ fn init_colony(world: &mut World) {
         put_resource(
             world,
             Resource::ScrapT1,
-            RealUnits(500),
-        )
-    );
-    assert_eq!(
-        RealUnits (0),
-        put_resource(
-            world,
-            Resource::ScrapT2,
             RealUnits(50),
         )
     );
@@ -107,8 +99,16 @@ fn init_colony(world: &mut World) {
         RealUnits (0),
         put_resource(
             world,
+            Resource::ScrapT2,
+            RealUnits(40),
+        )
+    );
+    assert_eq!(
+        RealUnits (0),
+        put_resource(
+            world,
             Resource::PolymerT1,
-            RealUnits(100),
+            RealUnits(30),
         )
     );
     assert_eq!(
@@ -158,6 +158,9 @@ impl epi::App for GlavblockApp {
     /// Put your widgets into a Symbol’s value as variable is void: SidePanel, Symbol’s value as variable is void: TopPanel, Symbol’s value as variable is void: CentralPanel, Symbol’s value as variable is void: Window or Symbol’s value as variable is void: Area.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            if ui.button("Смена").clicked() {
+                turn(&mut self.world, &mut self.resources);
+            }
             ui.separator();
             ui.heading("Люди");
             let people: std::collections::HashMap<Profession, usize> = people_by_profession(&mut self.world);
@@ -191,21 +194,30 @@ impl epi::App for GlavblockApp {
                     &format!("{}: {}", res, cnt.0),
                 );
             }
-
-            ui.heading("Настроение");
             ui.separator();
+            ui.heading("Настроение");
             let mood: usize = block_mood(&mut self.world);
             ui.label(
-                &format!("Среднее настроение: {}", mood / people.len()),
+                &format!("Среднее настроение: {}", mood.checked_div(people.len()).unwrap_or(1)),
             );
             let satiety: Satiety = block_satiety(&mut self.world);
             ui.label(
-                &format!("Сытость: {}", satiety.0 as usize / people.len()),
+                &format!("Сытость: {}", satiety.0.checked_div (people.len() as u16).unwrap_or(1)),
+            );
+            ui.heading("Пространство");
+            let mut rooms =
+                rooms_with_space(&mut self.world);
+            rooms.sort_by(
+                |(_, r1), (_, r2)|
+                r2.0.cmp(&(r1.0))
             );
 
-            if ui.button("Смена").clicked() {
-                turn(&mut self.world, &mut self.resources);
+            for (room, space) in rooms.iter() {
+                ui.label(
+                    &format!("{}: {}", room, space.0),
+                );
             }
+
         });
 
     }

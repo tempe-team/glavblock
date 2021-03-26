@@ -8,7 +8,7 @@ use crate::core::*;
 use crate::area::*;
 
 /// Сколько места занимает человек
-pub static COMRAD_RENTED_PLACE: usize = 10;
+pub static COMRAD_RENTED_PLACE: usize = 1000;
 
 /// Сытость. Согласно этой статье
 /// https://pikabu.ru/story/kak_dolgo_chelovek_mozhet_prozhit_bez_edyi_3570894

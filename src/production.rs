@@ -55,16 +55,16 @@ pub fn stationary_size (
 ) -> AreaOccupied {
     match stationary  {
         Stationary::None => AreaOccupied(0),
-        Stationary::BenchToolT1 => AreaOccupied(20),
-        Stationary::BenchToolT2 => AreaOccupied(25),
-        Stationary::BenchToolT3 => AreaOccupied(50),
-        Stationary::FormatFurnace => AreaOccupied(50),
-        Stationary::LabT1 => AreaOccupied(20),
-        Stationary::LabT2 => AreaOccupied(40),
-        Stationary::LabT3 => AreaOccupied(60),
-        Stationary::Barrel => AreaOccupied(15),
-        Stationary::Rack => AreaOccupied(5),
-        Stationary::NeuroTerminal => AreaOccupied(5),
+        Stationary::BenchToolT1 => AreaOccupied(2000),
+        Stationary::BenchToolT2 => AreaOccupied(2500),
+        Stationary::BenchToolT3 => AreaOccupied(5000),
+        Stationary::FormatFurnace => AreaOccupied(5000),
+        Stationary::LabT1 => AreaOccupied(2000),
+        Stationary::LabT2 => AreaOccupied(4000),
+        Stationary::LabT3 => AreaOccupied(6000),
+        Stationary::Barrel => AreaOccupied(1500),
+        Stationary::Rack => AreaOccupied(500),
+        Stationary::NeuroTerminal => AreaOccupied(500),
     }
 }
 
@@ -82,6 +82,7 @@ pub fn install_germ(
     };
     world.push((
         Germ(),
+        tier,
         StationaryStatus::Constructing,
         germ_requirements(tier),
         purpose,
@@ -93,9 +94,9 @@ pub fn install_germ(
 fn tier2germ_capacity(tier: Tier) -> AreaCapacity {
     match tier {
         Tier::NoTier => unimplemented!(),
-        Tier::T1 => AreaCapacity(30),
-        Tier::T2 => AreaCapacity(150),
-        Tier::T3 => AreaCapacity(500),
+        Tier::T1 => AreaCapacity(3000),
+        Tier::T2 => AreaCapacity(15000),
+        Tier::T3 => AreaCapacity(50000),
     }
 }
 
@@ -351,7 +352,7 @@ pub fn start_build_task (
 ) -> Result<(), SamosborError> {
     let free_space = get_room_free_space(world, room);
     let required_space = stationary_size(stationary);
-    if free_space < required_space.0 as i32 {
+    if free_space.0 < required_space.0 {
         Err(SamosborError::NotEnoughArea)
     } else {
         let required_resources = stationary_required_resources(stationary);
