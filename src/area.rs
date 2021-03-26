@@ -1,3 +1,4 @@
+use std::fmt;
 use std::collections::{
     HashMap,
 };
@@ -16,9 +17,20 @@ pub enum AreaType {
     Party, // склады, образовательные помещения, детские сады, школы, залы партсобраний
 }
 
+impl fmt::Display for AreaType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AreaType::Living     => write!(f, "{}", "Жилое"),
+            AreaType::Science    => write!(f, "{}", "Научное"),
+            AreaType::Military   => write!(f, "{}", "Казармы"),
+            AreaType::Industrial => write!(f, "{}", "Производственное"),
+            AreaType::Party      => write!(f, "{}", "Партийное"),
+        }
+    }
+}
 
-/// Вместимость помещения(единицы площади)
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Вместимость помещения (квадратные сантиметры)
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AreaCapacity(pub usize);
 
 impl From<AreaCapacity> for usize {
@@ -27,13 +39,14 @@ impl From<AreaCapacity> for usize {
     }
 }
 
-/// Занятая площадь(единицы площади)
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, )]
+/// Занятая площадь (квадратные сантиметры)
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct AreaOccupied(pub usize);
 
-impl From<AreaOccupied> for usize {
-    fn from(val: AreaOccupied) -> usize {
-        val.0
+impl Add for AreaOccupied {
+    type Output = Self;
+    fn add(self, other: Self) -> Self::Output {
+        Self(self.0 + other.0)
     }
 }
 
@@ -43,28 +56,39 @@ impl AddAssign for AreaOccupied {
     }
 }
 
-impl Sub for AreaOccupied {
-    type Output = Self;
-    fn sub(self, other: Self) -> Self::Output {
-        Self(self.0 - other.0)
-    }
-}
-
-impl From<AreaCapacity> for AreaOccupied {
-    fn from(val: AreaCapacity) -> AreaOccupied {
-        AreaOccupied (val.0)
-    }
-}
+/// Свободная площадь (квадратные сантиметры)
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd )]
+pub struct AreaFree(pub usize);
 
 /// Метка того, к какой комнате принадлежит эта штука
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct BelongsToRoom (pub Entity);
 
+/// Какие комнаты есть и сколько в них места
+pub fn rooms_with_space(
+    world: &mut World
+) -> Vec<(AreaType, AreaFree)> {
+    let mut query = <(
+        Entity,
+        &AreaType,
+    )>::query();
+    let mut areas = Vec::new();
+    for (entity, area_type) in query.iter(world) {
+        areas.push((entity.clone(), area_type.clone()));
+    };
+    let mut result = Vec::new();
+    for (entity, area_type) in areas.iter() {
+        let fspace = get_room_free_space(world, entity.clone());
+        result.push((*area_type, fspace));
+    };
+    result
+}
+
 /// Узнать сколько в комнате осталось места
 pub fn get_room_free_space(
     world: &mut World,
     room: Entity,
-) -> i32 { // может быть негативным
+) -> AreaFree {
     let AreaCapacity (capacity) = world
         .entry(room)
         .unwrap()
@@ -73,18 +97,18 @@ pub fn get_room_free_space(
         .clone();
     let mut query = <(
         &BelongsToRoom,
-        &AreaOccupied
+        &AreaOccupied,
     )>::query();
     let mut sum:usize = 0;
     for occupied in query.iter(world)
         .filter(
-            |(&BelongsToRoom (entity), _)|
+            |(&BelongsToRoom(entity), _)|
             entity == room
         ).map(|tup|tup.1) {
-            let occupied_:usize = occupied.clone().into();
+            let occupied_ = occupied.0;
             sum += occupied_;
         };
-    capacity as i32 - sum as i32
+    AreaFree(capacity - sum)
 }
 
 /// Есть ли у нас комната этого назначения
@@ -94,46 +118,48 @@ pub fn get_sufficent_room(
     for_: AreaOccupied,
     type_: AreaType,
 ) -> Option<Entity> {
-    let mut areas: HashMap<Entity, (AreaCapacity, AreaOccupied)> = HashMap::new();
+    let mut areas: HashMap<Entity, AreaFree> = HashMap::new();
+
     let mut areasq = <(
+        Entity,
         &AreaType,
         &AreaCapacity,
-        &Entity,
     )>::query();
-    for (_, capacity, entity) in areasq
+    for (entity, _, capacity) in areasq
         .iter(world)
-        .filter(|(artype,_, _)| **artype == type_)
+        .filter(|(_, artype, _)| **artype == type_)
     {
-        areas.insert(*entity, (*capacity, AreaOccupied(0)));
+        areas.insert(*entity, AreaFree(capacity.0));
     }
 
-    let mut buildingsq = <(
+    let mut volumeq = <(
         &BelongsToRoom,
         &AreaOccupied,
     )>::query();
 
     // Собираем заполненность помещений
-    for (room, building_size) in buildingsq.iter(world) {
+    for (room, volume) in volumeq.iter(world) {
         match areas.get_mut(&room.0) {
-            Some((_, occupied)) => *occupied += *building_size,
+            Some(free) => free.0 += volume.0,
             None => (),
         }
-    }
+    };
 
-    // FIXME: сравнение capacity >= occupied это обход переполнения
-    let mut areas_free_space = Vec::from_iter(
-        areas
-            .iter()
-            .filter(|(_, (c, o))| AreaOccupied::from(*c) >= *o)
-            .map(|(k, (c, o))| (k, AreaOccupied::from(*c) - *o))
-            .filter (|(_, o)| *o >= for_)
-    );
+    let mut areas_vec:Vec<(Entity, AreaFree)> = areas
+        .iter()
+        .map(|(k,v)| {(*k, *v)})
+        .filter(|(_, f)|{f.0 >= for_.0})
+        .collect();
 
     // берем наиболее забитые помещения
     // но в которые тем не менее вместится то что нам надо
-    areas_free_space.sort_by (|(_, o1), (_, o2)| o1.cmp(o2));
-    match areas_free_space.pop () {
-        Some((e, _)) => Some (*e),
+    areas_vec
+        .sort_by (
+            |(_, f1), (_, f2)|
+            {(f1.0 as usize).cmp(&(f2.0 as usize))}
+        );
+    match areas_vec.pop () {
+        Some((e, _)) => Some (e),
         None => None,
     }
 }

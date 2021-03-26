@@ -8,29 +8,7 @@ use crate::core::*;
 use crate::area::*;
 
 /// Сколько места занимает человек
-pub static COMRAD_RENTED_PLACE: usize = 10;
-
-/// Какому отделу ликвидаторов принадлежит боец
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum MilitaryDep {
-    None, // Не военный
-    OLPS, // Отдел Ликвидации Последствий Самосбора
-    OBCU, // Отдел по Борьбе с Человеческими Угрозами
-    OGB, // Отдел Государственной Безопасности
-}
-
-/// К какому НИИ тяготеет яйцеголовый
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum SciSpec {
-    None, // Не ученый
-    Samosbor, // НИИ Самосбора и Последствий. Плесень, слизь, твари, абберации, патогены и прочее. Очистка материи от влияния самосбора.
-    Nervonet, // НИИ Коммуникаций и Нервонета
-    Culture, // НИИ Культуры и Оккультизма. Про фракции помимо партии.
-    Space, // НИИ Пространства и Бетона
-    Industry, // НИИ Материалов и Промышленности
-    Weapon, // НИИ Вооружения
-    Bio, // НИИ Регулярной Биологии. Изучает формы жизни не затронутые самосбором, либо стабильно существующие вопреки ему. В том числе - людей. Помимо людей - борщевик, лифтовых арахн, бетоноедов и прочее.
-}
+pub static COMRAD_RENTED_PLACE: usize = 1000;
 
 /// Сытость. Согласно этой статье
 /// https://pikabu.ru/story/kak_dolgo_chelovek_mozhet_prozhit_bez_edyi_3570894
@@ -51,19 +29,6 @@ pub struct Satiety(pub u16);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Mood(pub u8);
 
-pub fn random_sci_spec () -> SciSpec {
-    match d(1,7) {
-        1 => SciSpec::Samosbor,
-        2 => SciSpec::Nervonet,
-        3 => SciSpec::Culture,
-        4 => SciSpec::Space,
-        5 => SciSpec::Industry,
-        6 => SciSpec::Weapon,
-        7 => SciSpec::Bio,
-        _ => unreachable!(),
-    }
-}
-
 /// Профессия
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Profession {
@@ -77,15 +42,14 @@ pub enum Profession {
 
 impl fmt::Display for Profession {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let name = match self {
-            NoProf => "Тунеядец".to_string(),
-            Stalker => "Мусорщик".to_string(),
-            Likvidator => "Ликвидатор".to_string(),
-            Scientist => "Ученый".to_string(),
-            Worker => "Рабочий".to_string(),
-            Party => "Партийный функционер".to_string(),
-        };
-        write!(f, "{}", name)
+        match self {
+            Profession::NoProf     => write!(f, "{}", "Тунеядец"),
+            Profession::Stalker    => write!(f, "{}", "Мусорщик"),
+            Profession::Likvidator => write!(f, "{}", "Ликвидатор"),
+            Profession::Scientist  => write!(f, "{}", "Ученый"),
+            Profession::Worker     => write!(f, "{}", "Рабочий"),
+            Profession::Party      => write!(f, "{}", "Партийный функционер"),
+        }
     }
 }
 
@@ -94,8 +58,6 @@ pub fn spawn_comrad(
     world: &mut World,
     prof: Profession,
     tier: Tier,
-    mdep: MilitaryDep,
-    nii: SciSpec,
     room: Entity,
 ) -> Entity {
     let entity = world.push ((
@@ -103,8 +65,6 @@ pub fn spawn_comrad(
         tier,
         BelongsToRoom(room),
         AreaOccupied(COMRAD_RENTED_PLACE),
-        mdep,
-        nii,
         Satiety(100),
         Mood(5),
     ));
@@ -136,8 +96,6 @@ pub fn spawn_1_g (
         world,
         Profession::Likvidator,
         Tier::T2,
-        MilitaryDep::OLPS,
-        SciSpec::None,
         room,
     );
 
@@ -147,8 +105,6 @@ pub fn spawn_1_g (
             world,
             Profession::Likvidator,
             Tier::T1,
-            MilitaryDep::OLPS,
-            SciSpec::None,
             room,
         );
     };
@@ -159,8 +115,6 @@ pub fn spawn_1_g (
             world,
             Profession::Likvidator,
             Tier::T1,
-            MilitaryDep::OLPS,
-            SciSpec::None,
             room,
         );
     };
@@ -171,8 +125,6 @@ pub fn spawn_1_g (
             world,
             Profession::Likvidator,
             Tier::T1,
-            MilitaryDep::OLPS,
-            SciSpec::None,
             room,
         );
     };
@@ -183,8 +135,6 @@ pub fn spawn_1_g (
             world,
             Profession::Likvidator,
             Tier::T1,
-            MilitaryDep::OLPS,
-            SciSpec::None,
             room,
         );
     };

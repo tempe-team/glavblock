@@ -32,8 +32,7 @@ pub enum Stationary {
     LabT1, // Абстрактное научное оборудование.
     LabT2, // Абстрактное научное оборудование. Крутое.
     LabT3, // Абстрактное научное оборудование. Супер крутое.
-    Barrel, // Чаны, в которых проходят химические реакции или хранятся текучие ресурсы. Используются в комбинации с хим, биолабораторией или печью. Забирают некое сырье, некий реагент и через какое-то время отдают другое сырье или продукт.
-    Rack, // Стеллаж. Ставится в складские помещения. Увеличивает вместимость последних.
+    Barrel, // Чаны, в которых проходят химические реакции. Используются в комбинации с хим, биолабораторией или печью. Забирают некое сырье, некий реагент и через какое-то время отдают другое сырье или продукт.
 
     // Инфраструктура
     NeuroTerminal, // Терминал для связи с нейронетом. ЭВМ.
@@ -55,29 +54,34 @@ pub fn stationary_size (
 ) -> AreaOccupied {
     match stationary  {
         Stationary::None => AreaOccupied(0),
-        Stationary::BenchToolT1 => AreaOccupied(20),
-        Stationary::BenchToolT2 => AreaOccupied(25),
-        Stationary::BenchToolT3 => AreaOccupied(50),
-        Stationary::FormatFurnace => AreaOccupied(50),
-        Stationary::LabT1 => AreaOccupied(20),
-        Stationary::LabT2 => AreaOccupied(40),
-        Stationary::LabT3 => AreaOccupied(60),
-        Stationary::Barrel => AreaOccupied(15),
-        Stationary::Rack => AreaOccupied(5),
-        Stationary::NeuroTerminal => AreaOccupied(5),
+        Stationary::BenchToolT1 => AreaOccupied(2000),
+        Stationary::BenchToolT2 => AreaOccupied(2500),
+        Stationary::BenchToolT3 => AreaOccupied(5000),
+        Stationary::FormatFurnace => AreaOccupied(5000),
+        Stationary::LabT1 => AreaOccupied(2000),
+        Stationary::LabT2 => AreaOccupied(4000),
+        Stationary::LabT3 => AreaOccupied(6000),
+        Stationary::Barrel => AreaOccupied(1500),
+        Stationary::Rack => AreaOccupied(500),
+        Stationary::NeuroTerminal => AreaOccupied(500),
     }
 }
 
 /// Поставить герму + обустроить помещение
-/// Версия для типа World
 pub fn install_germ(
     world: &mut World,
     tier: Tier,
     purpose: AreaType,
 ) -> Entity {
+    let t: usize = match tier {
+        Tier::T1     => 1,
+        Tier::T2     => 2,
+        Tier::T3     => 3,
+        Tier::NoTier => 0,
+    };
     world.push((
         Germ(),
-        tier.clone(),
+        tier,
         StationaryStatus::Constructing,
         germ_requirements(tier),
         purpose,
@@ -89,9 +93,9 @@ pub fn install_germ(
 fn tier2germ_capacity(tier: Tier) -> AreaCapacity {
     match tier {
         Tier::NoTier => unimplemented!(),
-        Tier::T1 => AreaCapacity(30),
-        Tier::T2 => AreaCapacity(150),
-        Tier::T3 => AreaCapacity(500),
+        Tier::T1 => AreaCapacity(3000),
+        Tier::T2 => AreaCapacity(15000),
+        Tier::T3 => AreaCapacity(50000),
     }
 }
 
@@ -210,7 +214,6 @@ pub struct TaskMeta {
     pub tier: Tier, // Тир исполнителя
     pub bp: BuildPower,
     pub stationary: Stationary, // на каком оборудовании надо выполнять работу
-    pub sci_spec: SciSpec,
 }
 
 /// Приоритет задачи
@@ -228,7 +231,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::BenchToolT2 => vec![
@@ -237,7 +239,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::BenchToolT3 => vec![
@@ -246,7 +247,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::FormatFurnace => vec![
@@ -255,7 +255,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT1 => vec![
@@ -264,7 +263,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT2 => vec![
@@ -273,7 +271,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::LabT3 => vec![
@@ -282,7 +279,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::Barrel => vec![
@@ -291,7 +287,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::Rack => vec![
@@ -300,7 +295,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::NeuroTerminal => vec![
@@ -309,7 +303,6 @@ pub fn stationary_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Stationary::None => Vec::new (),
@@ -328,7 +321,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Tier::T2 => vec![
@@ -337,7 +329,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
         Tier::T3 => vec![
@@ -346,7 +337,6 @@ pub fn germ_requirements(
                 tier: Tier::T1,
                 bp: BuildPower(10),
                 stationary: Stationary::None,
-                sci_spec: SciSpec::None,
             },
         ],
     }
@@ -361,7 +351,7 @@ pub fn start_build_task (
 ) -> Result<(), SamosborError> {
     let free_space = get_room_free_space(world, room);
     let required_space = stationary_size(stationary);
-    if free_space < required_space.0 as i32 {
+    if free_space.0 < required_space.0 {
         Err(SamosborError::NotEnoughArea)
     } else {
         let required_resources = stationary_required_resources(stationary);
