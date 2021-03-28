@@ -9,6 +9,7 @@ mod storage;
 mod people;
 mod area;
 mod turn;
+mod screens;
 
 pub use app::GlavblockApp;
 
