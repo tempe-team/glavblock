@@ -83,7 +83,7 @@ fn init_colony(world: &mut World) {
         RealUnits(0),
         put_resource(
             world,
-            Resource::ConcentratT1,
+            Resource::Concentrat,
             RealUnits(1000),
         ),
     );
@@ -107,16 +107,8 @@ fn init_colony(world: &mut World) {
         RealUnits (0),
         put_resource(
             world,
-            Resource::PolymerT1,
+            Resource::Polymer,
             RealUnits(30),
-        )
-    );
-    assert_eq!(
-        RealUnits (0),
-        put_resource(
-            world,
-            Resource::PolymerT2,
-            RealUnits(10),
         )
     );
 }
