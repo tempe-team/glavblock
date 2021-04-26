@@ -1,4 +1,7 @@
+use std::sync::mpsc;
 use eframe::{egui, epi};
+use std::collections::HashMap;
+use std::vec::Vec;
 
 use legion::*;
 
@@ -10,15 +13,6 @@ use crate::storage::*;
 use crate::people::*;
 use crate::turn::*;
 use crate::area::*;
-
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
-#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
-pub struct GlavblockApp {
-    // Example stuff:
-    pub label: String,
-    pub world: World,
-    pub resources: Resources,
-}
 
 fn init_colony(world: &mut World) {
     // казарма с рассчетом №1-Ж
@@ -114,25 +108,38 @@ fn init_colony(world: &mut World) {
     );
 }
 
+#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
+pub struct GlavblockApp {
+    // Example stuff:
+    pub label: String,
+    pub world: World,
+    pub resources: Resources,
+    pub textures: HashMap<String, egui::TextureId>,
+    pub resource_loaders: HashMap<String, mpsc::Receiver<Vec<u8>>>,
+}
+
 impl Default for GlavblockApp {
     fn default() -> Self {
         let mut world = World::default();
         let mut resources = Resources::default();
-        resources.insert(BuildPowerPool::new()
-        );
+        let resource_loaders = HashMap::new ();
+        let textures = HashMap::new ();
+        resources.insert(BuildPowerPool::new());
         init_colony(&mut world);
         Self {
             // Example stuff:
             label: "Главблок".to_owned(),
             world,
             resources,
+            textures,
+            resource_loaders,
         }
     }
 }
 
 impl epi::App for GlavblockApp {
     fn name(&self) -> &str {
-        "egui template"
+        "Главблок!"
     }
 
     /// Called by the framework to load old app state (if any).
@@ -147,18 +154,19 @@ impl epi::App for GlavblockApp {
         epi::set_value(storage, epi::APP_KEY, self);
     }
 
-    /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a Symbol’s value as variable is void: SidePanel, Symbol’s value as variable is void: TopPanel, Symbol’s value as variable is void: CentralPanel, Symbol’s value as variable is void: Window or Symbol’s value as variable is void: Area.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>)  {
         draw_ui(
             &mut self.world,
             &mut self.resources,
+            &mut self.textures,
+            &mut self.resource_loaders,
             ctx,
             frame,
         )
     }
 
-    fn setup(&mut self, _ctx: &egui::CtxRef) {}
+    fn setup(&mut self, _ctx: &egui::CtxRef) {
+    }
 
     fn warm_up_enabled(&self) -> bool {
         false

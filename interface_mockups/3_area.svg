@@ -13,7 +13,7 @@
    viewBox="0 0 338.66668 190.5"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (0767f8302a, 2020-10-17)"
+   inkscape:version="1.0.2 (394de47547, 2021-03-26)"
    sodipodi:docname="3_area.svg">
   <defs
      id="defs2">
@@ -205,9 +205,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="367.02591"
-     inkscape:cy="609.42907"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="717.1644"
+     inkscape:cy="385.55306"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -229,12 +229,6 @@
      inkscape:snap-bbox-edge-midpoints="false"
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-others="false">
-    <inkscape:grid
-       type="xygrid"
-       id="grid678"
-       dotted="true"
-       originx="169.33334"
-       originy="95.25" />
     <sodipodi:guide
        position="262.28203,59.986226"
        orientation="197.94226,0"
@@ -292,7 +286,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

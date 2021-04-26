@@ -10,8 +10,21 @@ mod people;
 mod area;
 mod turn;
 mod screens;
+mod assets;
 
 pub use app::GlavblockApp;
+
+#[cfg(target_arch = "wasm32")]
+use console_error_panic_hook;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
+}
 
 // ----------------------------------------------------------------------------
 // When compiling for web:
@@ -26,6 +39,7 @@ use eframe::wasm_bindgen::{self, prelude::*};
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
+    init_panic_hook();
     let app = GlavblockApp::default();
     eframe::start_web(canvas_id, Box::new(app))
 }

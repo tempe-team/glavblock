@@ -13,7 +13,7 @@
    viewBox="0 0 338.66668 190.5"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (0767f8302a, 2020-10-17)"
+   inkscape:version="1.0.2 (394de47547, 2021-03-26)"
    sodipodi:docname="4_tasks.svg">
   <defs
      id="defs2">
@@ -421,9 +421,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.1767767"
-     inkscape:cx="1087.4514"
-     inkscape:cy="624.05331"
+     inkscape:zoom="0.50000001"
+     inkscape:cx="786.81158"
+     inkscape:cy="425.78182"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -445,12 +445,6 @@
      inkscape:snap-bbox-edge-midpoints="false"
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-others="false">
-    <inkscape:grid
-       type="xygrid"
-       id="grid678"
-       dotted="true"
-       originx="169.33334"
-       originy="95.25" />
     <sodipodi:guide
        position="262.11349,77.85803"
        orientation="197.94226,0"

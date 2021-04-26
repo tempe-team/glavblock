@@ -180,62 +180,7 @@
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="false"
      inkscape:snap-bbox-midpoints="false"
-     inkscape:snap-others="false">
-    <inkscape:grid
-       type="xygrid"
-       id="grid678"
-       dotted="true"
-       originx="169.33334"
-       originy="95.25" />
-    <sodipodi:guide
-       position="262.28203,59.986226"
-       orientation="197.94226,0"
-       id="guide1015" />
-    <sodipodi:guide
-       position="262.28203,7.6140011"
-       orientation="0,197.94226"
-       id="guide1017" />
-    <sodipodi:guide
-       position="314.65425,7.6140011"
-       orientation="-197.94226,0"
-       id="guide1019" />
-    <sodipodi:guide
-       position="314.65425,59.986226"
-       orientation="0,-197.94226"
-       id="guide1021" />
-    <sodipodi:guide
-       position="286.74002,44.741833"
-       orientation="81.063112,0"
-       id="guide1023" />
-    <sodipodi:guide
-       position="286.74002,23.293885"
-       orientation="0,89.659303"
-       id="guide1025" />
-    <sodipodi:guide
-       position="310.46238,23.293885"
-       orientation="-81.063112,0"
-       id="guide1027" />
-    <sodipodi:guide
-       position="310.46238,44.741833"
-       orientation="0,-89.659303"
-       id="guide1029" />
-    <sodipodi:guide
-       position="279.94525,44.28563"
-       orientation="81.063114,0"
-       id="guide1031" />
-    <sodipodi:guide
-       position="279.94525,22.837681"
-       orientation="0,89.659301"
-       id="guide1033" />
-    <sodipodi:guide
-       position="303.6676,22.837681"
-       orientation="-81.063114,0"
-       id="guide1035" />
-    <sodipodi:guide
-       position="303.6676,44.28563"
-       orientation="0,-89.659301"
-       id="guide1037" />
-  </sodipodi:namedview>
+     inkscape:snap-others="false" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -244,7 +189,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

@@ -13,7 +13,7 @@
    viewBox="0 0 338.66668 190.5"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (0767f8302a, 2020-10-17)"
+   inkscape:version="1.0.2 (394de47547, 2021-03-26)"
    sodipodi:docname="0_start.svg">
   <defs
      id="defs2">
@@ -44,7 +44,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="580.68885"
+     inkscape:cx="653.41983"
      inkscape:cy="438.76459"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -64,7 +64,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -132,6 +132,24 @@
          id="tspan1127"
          x="118.59953"
          y="82.7742"
-         style="font-size:8.46667px;stroke-width:0.264583">Где наша глаша не пропадала! </tspan></text>
+         style="font-size:8.46667px;stroke-width:0.264583">Где наша не пропадала! </tspan></text>
+    <rect
+       style="fill:none;stroke:#020000;stroke-width:1.32292;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1125-3"
+       width="211.02316"
+       height="15.798134"
+       x="114.3344"
+       y="90.705948" />
+    <text
+       xml:space="preserve"
+       style="font-size:8.46667px;line-height:1.25;font-family:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="118.61282"
+       y="101.34245"
+       id="text1129-6"><tspan
+         sodipodi:role="line"
+         id="tspan1127-7"
+         x="118.61282"
+         y="101.34245"
+         style="font-size:8.46667px;stroke-width:0.264583">Проще застрелиться! Где мой револьвер?...</tspan></text>
   </g>
 </svg>
