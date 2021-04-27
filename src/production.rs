@@ -72,12 +72,6 @@ pub fn install_germ(
     tier: Tier,
     purpose: AreaType,
 ) -> Entity {
-    let t: usize = match tier {
-        Tier::T1     => 1,
-        Tier::T2     => 2,
-        Tier::T3     => 3,
-        Tier::NoTier => 0,
-    };
     world.push((
         Germ(),
         tier,

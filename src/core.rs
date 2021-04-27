@@ -3,7 +3,7 @@ use rand::thread_rng;
 use rand::Rng;
 
 /// Бросить кубы
-pub fn d(rolls:u8, sides:u8) -> usize {
+pub fn _d(rolls:u8, sides:u8) -> usize {
     if sides < 1 || rolls < 1 {
         0
     } else {
@@ -29,9 +29,4 @@ pub enum Tier {
     T1,
     T2,
     T3,
-}
-
-pub enum _Language {
-    RU,
-    EN,
 }

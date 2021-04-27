@@ -5,9 +5,7 @@ use std::collections::HashMap;
 
 use crate::resources::*;
 use crate::storage::*;
-use crate::people::*;
 use crate::turn::*;
-use crate::area::*;
 use crate::assets::{
     fetch_resource_with_check,
     decode_textures,

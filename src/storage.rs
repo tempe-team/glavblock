@@ -65,10 +65,7 @@ pub fn volume2real (
 /// Партию ресурсов можно распределить по нескольким местам хранения
 pub fn get_rooms_for_divisible_load(
     world: &mut World,
-    resource: Resource,
-    amount: RealUnits,
 ) -> HashMap<Entity, AreaFree> {
-    let mut amount_ = amount.0;
     let mut rooms =
         HashMap::new();
     let mut rooms_query =
@@ -101,8 +98,6 @@ pub fn put_resource(
     let rooms =
         get_rooms_for_divisible_load(
             world,
-            resource,
-            amount,
         );
     for (room, area) in rooms.iter () {
         let required_space =

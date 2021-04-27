@@ -3,7 +3,6 @@ use std::collections::{
     HashMap,
 };
 use std::ops::*;
-use std::iter::FromIterator;
 
 use legion::*;
 
