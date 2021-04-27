@@ -197,7 +197,7 @@ pub fn consume_concentrat(
     // сколько есть на складе
     let mut t1_conc_amount = how_much_we_have(
         world,
-        Resource::ConcentratT1,
+        Resource::Concentrat,
     );
     // Сколько выдано
     let mut t1_conc_writeroff = 0;
@@ -222,14 +222,14 @@ pub fn consume_concentrat(
     }
     let rest = writeoff(
         world,
-        Resource::ConcentratT1,
+        Resource::Concentrat,
         RealUnits(t1_conc_writeroff),
     );
     // не получилось списать все. Ну ок, списываем что есть.
     if rest.0 != 0 {
         writeoff(
             world,
-            Resource::ConcentratT1,
+            Resource::Concentrat,
             rest,
         );
     }

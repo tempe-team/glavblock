@@ -36,32 +36,20 @@ pub fn get_piece_size (
     resource: Resource,
 ) -> AreaOccupied {
     match resource {
-        Resource::BioRawT1         => AreaOccupied(10),
-        Resource::BioRawT2         => AreaOccupied(10),
-        Resource::BioRawT3         => AreaOccupied(10),
+        Resource::BioRaw           => AreaOccupied(10),
         Resource::ScrapT1          => AreaOccupied(100),
         Resource::ScrapT2          => AreaOccupied(100),
         Resource::ScrapT3          => AreaOccupied(100),
         Resource::Concrete         => AreaOccupied(100),
-        Resource::IsoConcrete      => AreaOccupied(1),
-        Resource::TransparentSlime => AreaOccupied(10),
-        Resource::BlackSlime       => AreaOccupied(10),
-        Resource::BrownSlime       => AreaOccupied(10),
-        Resource::RedSlime         => AreaOccupied(10),
-        Resource::PinkSlime        => AreaOccupied(10),
-        Resource::WhiteSlime       => AreaOccupied(10),
+        Resource::Slime            => AreaOccupied(10),
         Resource::ComponentT1      => AreaOccupied(10),
         Resource::ComponentT2      => AreaOccupied(10),
         Resource::ComponentT3      => AreaOccupied(10),
         Resource::ReagentT1        => AreaOccupied(10),
         Resource::ReagentT2        => AreaOccupied(10),
         Resource::ReagentT3        => AreaOccupied(10),
-        Resource::PolymerT1        => AreaOccupied(50),
-        Resource::PolymerT2        => AreaOccupied(50),
-        Resource::PolymerT3        => AreaOccupied(50),
-        Resource::ConcentratT1     => AreaOccupied(1),
-        Resource::ConcentratT2     => AreaOccupied(1),
-        Resource::ConcentratT3     => AreaOccupied(1),
+        Resource::Polymer          => AreaOccupied(50),
+        Resource::Concentrat       => AreaOccupied(1),
     }
 }
 
@@ -77,10 +65,7 @@ pub fn volume2real (
 /// Партию ресурсов можно распределить по нескольким местам хранения
 pub fn get_rooms_for_divisible_load(
     world: &mut World,
-    resource: Resource,
-    amount: RealUnits,
 ) -> HashMap<Entity, AreaFree> {
-    let mut amount_ = amount.0;
     let mut rooms =
         HashMap::new();
     let mut rooms_query =
@@ -113,8 +98,6 @@ pub fn put_resource(
     let rooms =
         get_rooms_for_divisible_load(
             world,
-            resource,
-            amount,
         );
     for (room, area) in rooms.iter () {
         let required_space =

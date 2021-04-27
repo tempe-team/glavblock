@@ -62,7 +62,6 @@ pub fn stationary_size (
         Stationary::LabT2 => AreaOccupied(4000),
         Stationary::LabT3 => AreaOccupied(6000),
         Stationary::Barrel => AreaOccupied(1500),
-        Stationary::Rack => AreaOccupied(500),
         Stationary::NeuroTerminal => AreaOccupied(500),
     }
 }
@@ -73,12 +72,6 @@ pub fn install_germ(
     tier: Tier,
     purpose: AreaType,
 ) -> Entity {
-    let t: usize = match tier {
-        Tier::T1     => 1,
-        Tier::T2     => 2,
-        Tier::T3     => 3,
-        Tier::NoTier => 0,
-    };
     world.push((
         Germ(),
         tier,
@@ -161,7 +154,6 @@ pub fn stationary_build_power(
         Stationary::LabT2 => BuildPower(10),
         Stationary::LabT3 => BuildPower(10),
         Stationary::Barrel => BuildPower(10),
-        Stationary::Rack => BuildPower(0),
         Stationary::NeuroTerminal => BuildPower(10),
     }
 }
@@ -194,9 +186,6 @@ pub fn stationary_required_resources (
             (Resource::ScrapT1, RealUnits (1))
         ].iter().cloned().collect(),
         Stationary::Barrel => [
-            (Resource::ScrapT1, RealUnits (1))
-        ].iter().cloned().collect(),
-        Stationary::Rack => [
             (Resource::ScrapT1, RealUnits (1))
         ].iter().cloned().collect(),
         Stationary::NeuroTerminal => [
@@ -282,14 +271,6 @@ pub fn stationary_requirements(
             },
         ],
         Stationary::Barrel => vec![
-            TaskMeta {
-                prof: Profession::Worker,
-                tier: Tier::T1,
-                bp: BuildPower(10),
-                stationary: Stationary::None,
-            },
-        ],
-        Stationary::Rack => vec![
             TaskMeta {
                 prof: Profession::Worker,
                 tier: Tier::T1,

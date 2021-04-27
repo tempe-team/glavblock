@@ -24,4 +24,7 @@ TARGET_NAME="${CRATE_NAME_SNAKE_CASE}.wasm"
 wasm-bindgen "target/wasm32-unknown-unknown/${BUILD}/${TARGET_NAME}" \
   --out-dir docs --no-modules --no-typescript
 
+echo "Copy assets"
+cp -r assets docs/
+
 echo "Finished: docs/${CRATE_NAME_SNAKE_CASE}.wasm"
