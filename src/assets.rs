@@ -135,7 +135,6 @@ pub fn decode_textures(
     }
 }
 
-
 pub fn get_texture_id (
     texture_map: &mut HashMap<String, egui::TextureId>,
     path: String,

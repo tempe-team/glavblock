@@ -1,8 +1,13 @@
-use std::fmt;
+use std::{
+    fmt,
+};
 use std::hash::Hash;
 
+#[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, PartialOrd, Ord)]
 pub enum Resource {
+    Concentrat, // пищевой концентрат
+
     ScrapT1, // Лом черных металлов
     ScrapT2, // Лом цветных металлов
     ScrapT3, // Лом редких металлов
@@ -18,8 +23,29 @@ pub enum Resource {
     Concrete, // Бетонная крошка
     Slime, // Слизь
     Polymer, // Универсальный полимер
-    Concentrat, // пищевой концентрат
     BioRaw, // биологическое сырье.
+}
+
+/// FIXME: надо генерить список ресурсов напрямую из энума.
+/// Хорошо если бы это появилось прям в расте, использовать sturm не хочется.
+#[allow(dead_code)]
+pub fn all_resources () -> Vec<Resource> {
+    vec![
+        Resource::Concentrat,
+        Resource::ScrapT1,
+        Resource::ScrapT2,
+        Resource::ScrapT3,
+        Resource::ComponentT1,
+        Resource::ComponentT2,
+        Resource::ComponentT3,
+        Resource::ReagentT1,
+        Resource::ReagentT2,
+        Resource::ReagentT3,
+        Resource::Concrete,
+        Resource::Slime,
+        Resource::Polymer,
+        Resource::BioRaw,
+    ]
 }
 
 impl fmt::Display for Resource {

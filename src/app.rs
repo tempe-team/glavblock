@@ -1,11 +1,24 @@
 use std::sync::mpsc;
-use eframe::{egui, epi};
+use eframe::{
+    egui::{
+        TextureId,
+        CtxRef,
+        SidePanel,
+        ImageButton,
+        CentralPanel,
+        CollapsingHeader,
+        Vec2,
+        Rgba,
+        Color32,
+    },
+    epi,
+};
+
 use std::collections::HashMap;
 use std::vec::Vec;
 
 use legion::*;
 
-use crate::screens::*;
 use crate::core::*;
 use crate::production::*;
 use crate::resources::*;
@@ -13,6 +26,11 @@ use crate::storage::*;
 use crate::people::*;
 use crate::turn::*;
 use crate::area::*;
+use crate::assets::{
+    fetch_resource_with_check,
+    decode_textures,
+    get_texture_id,
+};
 
 fn init_colony(world: &mut World) {
     // казарма с рассчетом №1-Ж
@@ -108,14 +126,147 @@ fn init_colony(world: &mut World) {
     );
 }
 
+pub enum ScreenId {
+    ScreenResources,
+    ScreenDemography,
+    ScreenSpace,
+    ScreenTasks,
+}
+
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 pub struct GlavblockApp {
-    // Example stuff:
     pub label: String,
     pub world: World,
     pub resources: Resources,
-    pub textures: HashMap<String, egui::TextureId>,
+    pub textures: HashMap<String, TextureId>,
     pub resource_loaders: HashMap<String, mpsc::Receiver<Vec<u8>>>,
+    pub current_screen: ScreenId,
+}
+
+impl GlavblockApp {
+    fn draw_ui(
+        &mut self,
+        ctx: &CtxRef,
+        frame: &mut epi::Frame<'_>,
+    ) {
+        fetch_resource_with_check(
+            &mut self.resource_loaders,
+            &mut self.textures,
+            "assets/resources.png".to_string(),
+            frame,
+        );
+        fetch_resource_with_check(
+            &mut self.resource_loaders,
+            &mut self.textures,
+            "assets/demography.png".to_string(),
+            frame,
+        );
+        fetch_resource_with_check(
+            &mut self.resource_loaders,
+            &mut self.textures,
+            "assets/space.png".to_string(),
+            frame,
+        );
+        fetch_resource_with_check(
+            &mut self.resource_loaders,
+            &mut self.textures,
+            "assets/tasks.png".to_string(),
+            frame,
+        );
+        decode_textures(
+            &mut self.resource_loaders,
+            &mut self.textures,
+            frame,
+        );
+
+        SidePanel::left("left_panel", 80.0).show(ctx, |ui| {
+            let button_txtr_size = [64.0, 64.0];
+
+            if ui
+                .add(ImageButton::new(
+                    get_texture_id(
+                        &mut self.textures,
+                        "assets/resources.png".to_string(),
+                    ),
+                    button_txtr_size,
+                )).on_hover_text("Ресурсы")
+                .clicked()
+            {
+                self.current_screen = ScreenId::ScreenResources;
+            }
+            if ui
+                .add(ImageButton::new(
+                    get_texture_id(
+                        &mut self.textures,
+                        "assets/demography.png".to_string(),
+                    ),
+                    button_txtr_size,
+                )).on_hover_text("Демография")
+                .clicked()
+            {
+                self.current_screen = ScreenId::ScreenDemography;
+            }
+            if ui
+                .add(ImageButton::new(
+                    get_texture_id(
+                        &mut self.textures,
+                        "assets/space.png".to_string(),
+                    ),
+                    button_txtr_size,
+                )).on_hover_text("Пространство")
+                .clicked()
+            {
+                self.current_screen = ScreenId::ScreenSpace;
+            }
+            if ui
+                .add(ImageButton::new(
+                    get_texture_id(
+                        &mut self.textures,
+                        "assets/tasks.png".to_string(),
+                    ),
+                    button_txtr_size,
+                ))
+                .on_hover_text("Производство")
+                .clicked()
+            {
+                self.current_screen = ScreenId::ScreenTasks;
+            }
+        });
+        match self.current_screen {
+            ScreenId::ScreenResources => self.resources_screen (ctx),
+            ScreenId::ScreenDemography => {}
+            ScreenId::ScreenSpace => {}
+            ScreenId::ScreenTasks => {}
+        }
+    }
+
+    fn resources_screen(
+        &mut self,
+        ctx: &CtxRef,
+    ) {
+        let mut container = CentralPanel::default();
+        let resources = what_we_have(&mut self.world);
+        container.show(ctx, |ui| {
+            CollapsingHeader::new("Ресурсы")
+                .default_open (true)
+                .show(
+                    ui,
+                    |ui| {
+                        for res in all_resources().iter () {
+                        let cnt = resources
+                                .get(&res)
+                                .unwrap_or(&RealUnits(0));
+                            ui.label(
+                                &format!("{}: {}", res, cnt.0),
+                            );
+                        }
+                    }
+                );
+            if ui.button("Смена").clicked() {
+                turn(&mut self.world, &mut self.resources);
+            }
+        });
+    }
 }
 
 impl Default for GlavblockApp {
@@ -124,22 +275,24 @@ impl Default for GlavblockApp {
         let mut resources = Resources::default();
         let resource_loaders = HashMap::new ();
         let textures = HashMap::new ();
+        let current_screen = ScreenId::ScreenResources;
         resources.insert(BuildPowerPool::new());
         init_colony(&mut world);
         Self {
             // Example stuff:
-            label: "Главблок".to_owned(),
+            label: "Главблок!".to_owned(),
             world,
             resources,
             textures,
             resource_loaders,
+            current_screen,
         }
     }
 }
 
 impl epi::App for GlavblockApp {
     fn name(&self) -> &str {
-        "Главблок!"
+        &self.label
     }
 
     /// Called by the framework to load old app state (if any).
@@ -154,18 +307,11 @@ impl epi::App for GlavblockApp {
         epi::set_value(storage, epi::APP_KEY, self);
     }
 
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>)  {
-        draw_ui(
-            &mut self.world,
-            &mut self.resources,
-            &mut self.textures,
-            &mut self.resource_loaders,
-            ctx,
-            frame,
-        )
+    fn update(&mut self, ctx: &CtxRef, frame: &mut epi::Frame<'_>)  {
+        self.draw_ui(ctx, frame)
     }
 
-    fn setup(&mut self, _ctx: &egui::CtxRef) {
+    fn setup(&mut self, _ctx: &CtxRef) {
     }
 
     fn warm_up_enabled(&self) -> bool {
@@ -174,7 +320,7 @@ impl epi::App for GlavblockApp {
 
     fn on_exit(&mut self) {}
 
-    fn initial_window_size(&self) -> Option<egui::Vec2> {
+    fn initial_window_size(&self) -> Option<Vec2> {
         None
     }
 
@@ -186,17 +332,18 @@ impl epi::App for GlavblockApp {
         true
     }
 
-    fn max_size_points(&self) -> egui::Vec2 {
+    fn max_size_points(&self) -> Vec2 {
         // Some browsers get slow with huge WebGL canvases, so we limit the size:
-        egui::Vec2::new(1024.0, 2048.0)
+        Vec2::new(1024.0, 2048.0)
     }
 
-    fn clear_color(&self) -> egui::Rgba {
+    fn clear_color(&self) -> Rgba {
         // NOTE: a bright gray makes the shadows of the windows look weird.
-        egui::Color32::from_rgb(12, 12, 12).into()
+        Color32::from_rgb(12, 12, 12).into()
     }
 
     fn icon_data(&self) -> Option<epi::IconData> {
         None
     }
+
 }
