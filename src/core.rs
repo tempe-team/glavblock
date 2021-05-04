@@ -1,4 +1,5 @@
 use std::hash::Hash;
+use std::fmt;
 use rand::thread_rng;
 use rand::Rng;
 
@@ -29,4 +30,15 @@ pub enum Tier {
     T1,
     T2,
     T3,
+}
+
+impl fmt::Display for Tier {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Tier::NoTier => write!(f, "{}", "без разряда"),
+            Tier::T1     => write!(f, "{}", "1 разряда"),
+            Tier::T2     => write!(f, "{}", "2 разряда"),
+            Tier::T3     => write!(f, "{}", "3 разряда"),
+        }
+    }
 }
