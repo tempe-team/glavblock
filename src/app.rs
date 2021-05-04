@@ -1,9 +1,11 @@
 use std::sync::mpsc;
+
 use eframe::{
     egui::{
         TextureId,
         CtxRef,
         SidePanel,
+        Button,
         ImageButton,
         CentralPanel,
         CollapsingHeader,
@@ -36,7 +38,7 @@ fn init_colony(world: &mut World) {
     // казарма с рассчетом №1-Ж
     let barracks = install_germ(
         world,
-        Tier::T2,
+        Germ::GermT2,
         AreaType::Military,
     );
     spawn_1_g(world, barracks);
@@ -44,27 +46,27 @@ fn init_colony(world: &mut World) {
     // T2 производственное помещение под установку верстака, станка, печи, и чанов
     let _manufactory = install_germ(
         world,
-        Tier::T2,
+        Germ::GermT2,
         AreaType::Industrial,
     );
 
     // T2 Склад с чанами и стеллажами
     let _stock = install_germ(
         world,
-        Tier::T2,
+        Germ::GermT2,
         AreaType::Party,
     );
 
     // Т1 комнатка для исследований
     install_germ(
         world,
-        Tier::T1,
+        Germ::GermT1,
         AreaType::Science,
     );
 
     let cell_sciencists = install_germ(
         world,
-        Tier::T1,
+        Germ::GermT1,
         AreaType::Living,
     );
     spawn_comrad(
@@ -78,7 +80,7 @@ fn init_colony(world: &mut World) {
     for _ in 0..33 {
         let cell = install_germ(
             world,
-            Tier::T1,
+            Germ::GermT1,
             AreaType::Living,
         );
         for _ in 0..3 {
@@ -232,11 +234,16 @@ impl GlavblockApp {
                 self.current_screen = ScreenId::ScreenTasks;
             }
         });
+        let mut container = CentralPanel::default();
         match self.current_screen {
-            ScreenId::ScreenResources => self.resources_screen (ctx),
+            ScreenId::ScreenResources => {
+                self.resources_screen(ctx)
+            },
             ScreenId::ScreenDemography => {}
             ScreenId::ScreenSpace => {}
-            ScreenId::ScreenTasks => {}
+            ScreenId::ScreenTasks => {
+                self.tasks_screen(ctx)
+            },
         }
     }
 
@@ -267,12 +274,104 @@ impl GlavblockApp {
             }
         });
     }
+
+    fn tasks_screen (
+        &mut self,
+        ctx: &CtxRef,
+    ) {
+        CentralPanel::default().show(ctx, |ui| {
+            ui.columns(2, | cols| {
+                // отрисовать CollapsedHeader-ами все доступные стационарки, гермы, ресурсы, изделия
+                // недоступные к постройке отрисовывать красным
+                // в ховере отрисовывать требуемые ресурсы
+                CollapsingHeader::new("Строить!")
+                    .default_open (true)
+                    .show(
+                        &mut cols[0],
+                        |ui| {
+                            let exists_rsrs = what_we_have(&mut self.world);
+                            for stat in all_stationaries().iter() {
+                                let stat_meta = can_build_stationary (
+                                    &mut self.world,
+                                    exists_rsrs.clone(), //FIXME
+                                    *stat,
+                                );
+                                match stat_meta {
+                                    Ok(room) =>  if ui.add(
+                                        Button::new(&format!("{}", *stat))
+                                    ).on_hover_ui(
+                                        |ui| {
+                                            for req in stationary_requirements(*stat).iter().map(display_task_meta) {
+                                                ui.label(req);
+                                            }
+                                        }
+                                    ).clicked () {
+                                        start_build_task(
+                                            &mut self.world,
+                                            *stat,
+                                            room,
+                                            TaskPriority (0),
+                                        );
+                                    },
+                                    Err((
+                                        not_enough_stts,
+                                        not_enough_ppl,
+                                        not_enough_rsrcs,
+                                        is_enough_space
+                                    )) => {
+                                        ui.add(
+                                            Button::new(&format!("{}", *stat)).text_color(Color32::RED)
+                                        ).on_hover_ui(
+                                            |ui| {
+                                                ui.label("Не хватает:");
+                                                for v in not_enough_stts.iter() {
+                                                    ui.label(format!("{}", *v));
+                                                }
+                                                for v in not_enough_ppl.iter() {
+                                                    let v_ = *v;
+                                                    ui.label(format!("{}, {}", v_.0, v_.1));
+                                                }
+                                                for v in not_enough_rsrcs.iter() {
+                                                    ui.label(format!("{}, {}", v.0, v.1.0));
+                                                }
+                                                if !is_enough_space {
+                                                    ui.label("А еще места нет");
+                                                }
+                                            }
+                                        );
+                                    }
+                                }
+
+                            }
+                        }
+                    );
+                let in_progress = currently_building(&mut self.world);
+                let mut right = cols.get_mut(1).unwrap();
+
+                for ip in in_progress.iter () {
+                    right.label(format!("{} , {}", ip.0, ip.1));
+                }
+            });
+
+            if ui.button("Смена").clicked() {
+                turn(&mut self.world, &mut self.resources);
+            };
+        });
+    }
 }
 
 impl Default for GlavblockApp {
     fn default() -> Self {
         let mut world = World::default();
         let mut resources = Resources::default();
+
+        // Заглушка для техпроцессов, чтобы алгоритмы подсчета не орали что у тебя нету постройки "Stationary::None"
+        // которая на самом деле означает отсутствие станка
+        world.push((
+            Stationary::None,
+            stationary_size(Stationary::None),
+            TaskStatus::Ready,
+        ));
         let resource_loaders = HashMap::new ();
         let textures = HashMap::new ();
         let current_screen = ScreenId::ScreenResources;

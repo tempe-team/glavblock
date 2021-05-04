@@ -31,6 +31,12 @@ impl Sub for RealUnits {
     }
 }
 
+impl Into<i32> for RealUnits {
+    fn into(self) -> i32 {
+        self.0 as i32
+    }
+}
+
 /// какое простанство занимает 1 единица этого ресурса
 pub fn get_piece_size (
     resource: Resource,

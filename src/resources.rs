@@ -1,7 +1,4 @@
-use std::{
-    fmt,
-};
-use std::hash::Hash;
+use std::{fmt, hash::Hash};
 
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, PartialOrd, Ord)]
