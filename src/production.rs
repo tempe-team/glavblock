@@ -28,7 +28,7 @@ pub struct Priority(pub usize);
 pub struct BelongsToStationary (pub Entity);
 
 /// Стационарные объекты
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Stationary {
     None, // Отсутствие постройки. Заглушка для обозначения того,
     // что некоторые производственные задачи не требуют
@@ -91,15 +91,8 @@ pub enum Germ {
     GermT3,
 }
 
-/// В каком состоянии строение
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum TaskStatus {
-    Constructing, // Строится
-    Ready, // Готово
-}
-
 /// Прогресс постройки
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TaskProgress {
     pub bp_required: BuildPower, // сколько всего запланировано билдавера влить
     pub bp_invested: BuildPower, // сколько билдпавера влито
@@ -498,12 +491,11 @@ pub fn can_build_stationary (
         AreaType::Industrial,
     );
     let res_diff = what_not_enough(exist_rsrcs, req_rsrcs);
-    if (
-        exist_stnrs.is_superset(&req_stnrs) &&
-            exist_ppl.is_superset(&req_ppl) &&
-            res_diff.is_empty() &&
-            room.is_some()
-    ) {
+    if exist_stnrs.is_superset(&req_stnrs) &&
+        exist_ppl.is_superset(&req_ppl) &&
+        res_diff.is_empty() &&
+        room.is_some()
+    {
         Ok(room.unwrap())
     } else {
         Err((
@@ -515,8 +507,8 @@ pub fn can_build_stationary (
     }
 }
 
-pub fn diff2hset<V: Copy+Eq+Hash>(
-    diff: Difference<V, RandomState>
+pub fn diff2hset<'a, V: Copy+Eq+Hash>(
+    diff: Difference<'a, V, RandomState>
 ) -> HashSet<V> {
     let mut result = HashSet::new();
     for v in diff {
@@ -552,19 +544,17 @@ pub fn what_not_enough<K: Eq+Hash+Copy, V: Into<i32>+Ord+Sub<Output=V>+Copy> (
 }
 
 /// Запустить постройку
+/// предполагается что возможность постройки была проверена ранее
 pub fn start_build_task(
     world: &mut World,
     stationary: Stationary,
     room: Entity,
-    priority: TaskPriority,
+    _priority: TaskPriority, // TODO: приоритет построек
 ) {
-    let free_space = get_room_free_space(world, room);
-    let required_space = stationary_size(stationary);
-
     let required_resources = stationary_required_resources(stationary);
     writeoff_bunch(world, required_resources);
     let requirements = stationary_requirements(stationary);
-    let task_id = world.push((
+    world.push((
         stationary,
         TaskPriority(0),
         stationary_size(stationary),
