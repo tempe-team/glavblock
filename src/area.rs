@@ -1,13 +1,13 @@
 use std::fmt;
-use std::collections::{
-    HashMap,
-};
+use std::collections::HashMap;
 use std::ops::*;
 
 use legion::*;
 
+use crate::core::TaskStatus;
+
 /// Виды помещений
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub enum AreaType {
     Living, // жилячейки
     Science, // лаборатории
@@ -19,11 +19,11 @@ pub enum AreaType {
 impl fmt::Display for AreaType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AreaType::Living     => write!(f, "{}", "Жилое"),
-            AreaType::Science    => write!(f, "{}", "Научное"),
+            AreaType::Living     => write!(f, "{}", "Жилячейка"),
+            AreaType::Science    => write!(f, "{}", "Лаборатория"),
             AreaType::Military   => write!(f, "{}", "Казармы"),
-            AreaType::Industrial => write!(f, "{}", "Производственное"),
-            AreaType::Party      => write!(f, "{}", "Партийное"),
+            AreaType::Industrial => write!(f, "{}", "Цех"),
+            AreaType::Party      => write!(f, "{}", "Партпомещение"),
         }
     }
 }
@@ -70,11 +70,12 @@ pub fn rooms_with_space(
     let mut query = <(
         Entity,
         &AreaType,
+        &TaskStatus
     )>::query();
     let mut areas = Vec::new();
-    for (entity, area_type) in query.iter(world) {
-        areas.push((entity.clone(), area_type.clone()));
-    };
+    for (entity, area_type, _) in query.iter(world).filter (|(_,_, status)| **status == TaskStatus::Ready) {
+                                                            areas.push((entity.clone(), area_type.clone()));
+                                                            };
     let mut result = Vec::new();
     for (entity, area_type) in areas.iter() {
         let fspace = get_room_free_space(world, entity.clone());
@@ -99,14 +100,15 @@ pub fn get_room_free_space(
         &AreaOccupied,
     )>::query();
     let mut sum:usize = 0;
-    for occupied in query.iter(world)
-        .filter(
-            |(&BelongsToRoom(entity), _)|
-            entity == room
-        ).map(|tup|tup.1) {
-            let occupied_ = occupied.0;
-            sum += occupied_;
-        };
+    for occupied in query.iter(
+        world
+    ).filter(
+        |(&BelongsToRoom(entity), _)|
+        entity == room
+    ).map(|tup|tup.1) {
+        let occupied_ = occupied.0;
+        sum += occupied_;
+    };
     AreaFree(capacity - sum)
 }
 
@@ -123,10 +125,11 @@ pub fn get_sufficent_room(
         Entity,
         &AreaType,
         &AreaCapacity,
+        &TaskStatus
     )>::query();
-    for (entity, _, capacity) in areasq
+    for (entity, _, capacity, _) in areasq
         .iter(world)
-        .filter(|(_, artype, _)| **artype == type_)
+        .filter(|(_, artype, _, status)| **artype == type_ && **status == TaskStatus::Ready)
     {
         areas.insert(*entity, AreaFree(capacity.0));
     }
@@ -161,4 +164,55 @@ pub fn get_sufficent_room(
         Some((e, _)) => Some (e),
         None => None,
     }
+}
+
+/// Какие у нас есть комнаты и сколько в них места
+pub fn all_rooms_with_space(
+    world: &mut World,
+) -> HashMap <Entity, (
+    AreaType,
+    AreaCapacity,
+    AreaFree,
+    AreaOccupied,
+)> {
+    let mut result = HashMap::new ();
+    let mut areasq = <(
+        Entity,
+        &AreaType,
+        &AreaCapacity,
+        &TaskStatus
+    )>::query();
+    for (entity, atype, capacity, _) in areasq
+        .iter(world)
+        .filter(|(_, artype, _, status)| **status == TaskStatus::Ready)
+    {
+        result.insert(
+            *entity,
+            ( atype.clone(),
+              capacity.clone(),
+              AreaFree(capacity.0),
+              AreaOccupied(0),
+            )
+        );
+    }
+
+    let mut volumeq = <(
+        &BelongsToRoom,
+        &AreaOccupied,
+    )>::query();
+
+    // Собираем заполненность помещений
+    for (room, volume) in volumeq.iter(world) {
+        match result.get_mut(&room.0) {
+            Some(room_) => {
+                // свободного пространства меньше на величину объекта
+                room_.2.0 -= volume.0;
+                // а заполненного соотв больше
+                room_.3.0 += volume.0;
+            },
+            None => (),
+        }
+    };
+
+    result
 }

@@ -144,3 +144,31 @@ pub fn get_texture_id (
         Some (texture_id) => texture_id.clone(),
     }
 }
+
+
+pub fn load_all_resources(
+    resource_loaders: &mut HashMap<String, mpsc::Receiver<Vec<u8>>>,
+    texture_map: &mut HashMap<String, egui::TextureId>,
+    frame: &mut epi::Frame<'_>,
+) {
+    let paths = vec![
+        "assets/resources.png".to_string(),
+        "assets/demography.png".to_string(),
+        "assets/space.png".to_string(),
+        "assets/tasks.png".to_string(),
+        "assets/military.png".to_string(),
+        "assets/party.png".to_string(),
+        "assets/industrial.png".to_string(),
+        "assets/science.png".to_string(),
+        "assets/living.png".to_string(),
+    ];
+
+    for path in paths.iter() {
+        fetch_resource_with_check(
+            resource_loaders,
+            texture_map,
+            path.clone(),
+            frame,
+        );
+    };
+}

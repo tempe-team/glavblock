@@ -30,7 +30,7 @@ pub struct Satiety(pub u16);
 pub struct Mood(pub u8);
 
 /// Профессия
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Profession {
     NoProf, // Нет профессии
     Stalker, // Мусорщик

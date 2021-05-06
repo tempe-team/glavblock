@@ -1,9 +1,18 @@
-use std::sync::mpsc;
+use std::{
+    sync::mpsc,
+    collections::{
+        HashMap,
+        HashSet,
+    },
+    vec::Vec,
+};
 
 use eframe::{
     egui::{
+        Align,
         TextureId,
         CtxRef,
+        Direction,
         SidePanel,
         Button,
         ImageButton,
@@ -12,12 +21,11 @@ use eframe::{
         Vec2,
         Rgba,
         Color32,
+        Layout,
+        vec2,
     },
     epi,
 };
-
-use std::collections::HashMap;
-use std::vec::Vec;
 
 use legion::*;
 
@@ -29,9 +37,13 @@ use crate::people::*;
 use crate::turn::*;
 use crate::area::*;
 use crate::assets::{
-    fetch_resource_with_check,
+    load_all_resources,
     decode_textures,
     get_texture_id,
+};
+use crate::queries::{
+    who_take_place,
+    what_take_place,
 };
 
 fn init_colony(world: &mut World) {
@@ -128,11 +140,35 @@ fn init_colony(world: &mut World) {
     );
 }
 
+/// На каком экране мы сейчас
 pub enum ScreenId {
     ScreenResources,
     ScreenDemography,
     ScreenSpace,
     ScreenTasks,
+}
+
+/// Стейт интерфейса пространства.
+pub struct SpaceScreenState {
+    pub living_checkbox: bool,
+    pub military_checkbox: bool,
+    pub party_checkbox: bool,
+    pub science_checkbox: bool,
+    pub industrial_checkbox: bool,
+    pub selected_area: Option<Entity>,
+}
+
+impl Default for SpaceScreenState {
+    fn default() -> Self {
+        Self {
+            living_checkbox: true,
+            military_checkbox: true,
+            party_checkbox: true,
+            science_checkbox: true,
+            industrial_checkbox: true,
+            selected_area: None,
+        }
+    }
 }
 
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -143,6 +179,7 @@ pub struct GlavblockApp {
     pub textures: HashMap<String, TextureId>,
     pub resource_loaders: HashMap<String, mpsc::Receiver<Vec<u8>>>,
     pub current_screen: ScreenId,
+    pub space_screen: SpaceScreenState,
 }
 
 impl GlavblockApp {
@@ -151,28 +188,9 @@ impl GlavblockApp {
         ctx: &CtxRef,
         frame: &mut epi::Frame<'_>,
     ) {
-        fetch_resource_with_check(
+        load_all_resources(
             &mut self.resource_loaders,
             &mut self.textures,
-            "assets/resources.png".to_string(),
-            frame,
-        );
-        fetch_resource_with_check(
-            &mut self.resource_loaders,
-            &mut self.textures,
-            "assets/demography.png".to_string(),
-            frame,
-        );
-        fetch_resource_with_check(
-            &mut self.resource_loaders,
-            &mut self.textures,
-            "assets/space.png".to_string(),
-            frame,
-        );
-        fetch_resource_with_check(
-            &mut self.resource_loaders,
-            &mut self.textures,
-            "assets/tasks.png".to_string(),
             frame,
         );
         decode_textures(
@@ -234,13 +252,14 @@ impl GlavblockApp {
                 self.current_screen = ScreenId::ScreenTasks;
             }
         });
-        let mut container = CentralPanel::default();
         match self.current_screen {
             ScreenId::ScreenResources => {
                 self.resources_screen(ctx)
             },
             ScreenId::ScreenDemography => {}
-            ScreenId::ScreenSpace => {}
+            ScreenId::ScreenSpace => {
+                self.space_screen(ctx)
+            }
             ScreenId::ScreenTasks => {
                 self.tasks_screen(ctx)
             },
@@ -251,9 +270,8 @@ impl GlavblockApp {
         &mut self,
         ctx: &CtxRef,
     ) {
-        let mut container = CentralPanel::default();
         let resources = what_we_have(&mut self.world);
-        container.show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             CollapsingHeader::new("Ресурсы")
                 .default_open (true)
                 .show(
@@ -345,14 +363,186 @@ impl GlavblockApp {
                             }
                         }
                     );
-                let in_progress = currently_building(&mut self.world);
-                let mut right = cols.get_mut(1).unwrap();
+                let mut in_progress:Vec<(Stationary, TaskProgress)>  = currently_building(&mut self.world)
+                    .iter()
+                    .cloned()
+                    .collect();
+                in_progress.sort();
+                let right = cols.get_mut(1).unwrap();
 
                 for ip in in_progress.iter () {
                     right.label(format!("{} , {}", ip.0, ip.1));
                 }
             });
 
+            if ui.button("Смена").clicked() {
+                turn(&mut self.world, &mut self.resources);
+            };
+        });
+    }
+
+    fn space_screen (
+        &mut self,
+        ctx: &CtxRef,
+    ) {
+        CentralPanel::default().show(ctx, |ui| {
+            ui.allocate_ui_with_layout(
+                vec2(
+                    ui.available_size_before_wrap_finite().x,
+                    32.0
+                ),
+                Layout::from_main_dir_and_cross_align(
+                    Direction::LeftToRight,
+                    Align::Center,
+                ),
+                |ui| {
+                    let img_size = [32.0, 32.0];
+                    ui.image(
+                        get_texture_id(
+                            &mut self.textures,
+                            "assets/living.png".to_string(),
+                        ),
+                        img_size,
+                    );
+                    ui.checkbox(
+                        &mut self.space_screen.living_checkbox,
+                        "",
+                    );
+                    ui.image(
+                        get_texture_id(
+                            &mut self.textures,
+                            "assets/military.png".to_string(),
+                        ),
+                        img_size,
+                    );
+                    ui.checkbox(
+                        &mut self.space_screen.military_checkbox,
+                        "",
+                    );
+                    ui.image(
+                        get_texture_id(
+                            &mut self.textures,
+                            "assets/party.png".to_string(),
+                        ),
+                        img_size,
+                    );
+                    ui.checkbox(
+                        &mut self.space_screen.party_checkbox,
+                        "",
+                    );
+                    ui.image(
+                        get_texture_id(
+                            &mut self.textures,
+                            "assets/science.png".to_string(),
+                        ),
+                        img_size,
+                    );
+                    ui.checkbox(
+                        &mut self.space_screen.science_checkbox,
+                        "",
+                    );
+                    ui.image(
+                        get_texture_id(
+                            &mut self.textures,
+                            "assets/industrial.png".to_string(),
+                        ),
+                        img_size,
+                    );
+                    ui.checkbox(
+                        &mut self.space_screen.industrial_checkbox,
+                        "",
+                    );
+                }
+            );
+
+            let rooms = all_rooms_with_space(&mut self.world);
+            let people = who_take_place(
+                &mut self.world,
+            );
+            let stationaries = what_take_place(
+                &mut self.world,
+            );
+            ui.columns(
+                2,
+                |cols| {
+                    cols[0].allocate_ui_with_layout(
+                        vec2(
+                            cols[0].available_size_before_wrap_finite().x,
+                            cols[0].available_size_before_wrap_finite().y,
+                        ),
+                        Layout::from_main_dir_and_cross_align(
+                            Direction::TopDown,
+                            Align::LEFT,
+                        ),
+                        |ui| {
+                            // Площади каких назначений мы отображаем (в зависимости от тыкнутых галок)
+                            let mut include_purposes = HashSet::new();
+                            if self.space_screen.living_checkbox {
+                                include_purposes.insert(AreaType::Living);
+                            }
+                            if self.space_screen.military_checkbox {
+                                include_purposes.insert(AreaType::Military);
+                            }
+                            if self.space_screen.party_checkbox {
+                                include_purposes.insert(AreaType::Party);
+                            }
+                            if self.space_screen.science_checkbox {
+                                include_purposes.insert(AreaType::Science);
+                            }
+                            if self.space_screen.industrial_checkbox {
+                                include_purposes.insert(AreaType::Industrial);
+                            }
+                            let mut result: Vec<(Entity, String)> = Vec::new();
+                            for room in rooms
+                                .iter()
+                                .filter(
+                                    |(entity, (atype, _, _, _) )| include_purposes.contains(atype)
+                                ) {
+                                    result.push((
+                                        *(room.0),
+                                        format!(
+                                            "{}, вместимость: {} кв.м., свободно: {} кв.м.",
+                                            room.1.0, room.1.1.0 / 100, room.1.2.0 / 100
+                                        )));
+                                };
+                            result.sort_by(|(_, a), (_, b)|(*a).cmp(b));
+                            for row in result {
+                                if ui.button(row.1).clicked () {
+                                    self.space_screen.selected_area = Some (row.0);
+                                }
+                            }
+                        }
+                    );
+                    if let Some(entity) = self.space_screen.selected_area {
+                        let mut room_contains: Vec<String> = Vec::new ();
+                        let empty = Vec::new();
+                        let people_in_room = people
+                            .get(&entity)
+                            .unwrap_or(&empty);
+                        for human in people_in_room {
+                            room_contains.push(format!(
+                                "{} {}, занимает {} м.кв.",
+                                human.0, human.1, human.2.0 / 100
+                            ))
+                        };
+                        let empty2 = Vec::new();
+                        let stationaries_in_room = stationaries
+                            .get(&entity)
+                            .unwrap_or(&empty2);
+
+                        for stat in stationaries_in_room {
+                            room_contains.push(format!(
+                                "{}, занимает {} м.кв. Состояние объекта: {}",
+                                stat.0, stat.1.0 / 100, stat.2
+                            ));
+                        };
+                        room_contains.sort();
+                        for row in room_contains {
+                            cols[1].label (row);
+                        }
+                    };
+                }
+            );
             if ui.button("Смена").clicked() {
                 turn(&mut self.world, &mut self.resources);
             };
@@ -375,6 +565,7 @@ impl Default for GlavblockApp {
         let resource_loaders = HashMap::new ();
         let textures = HashMap::new ();
         let current_screen = ScreenId::ScreenResources;
+        let space_screen = SpaceScreenState::default();
         resources.insert(BuildPowerPool::new());
         init_colony(&mut world);
         Self {
@@ -385,6 +576,7 @@ impl Default for GlavblockApp {
             textures,
             resource_loaders,
             current_screen,
+            space_screen,
         }
     }
 }

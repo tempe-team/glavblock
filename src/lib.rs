@@ -10,6 +10,7 @@ mod people;
 mod area;
 mod turn;
 mod assets;
+mod queries;
 
 pub use app::GlavblockApp;
 

@@ -24,7 +24,7 @@ pub enum SamosborError {
 }
 
 /// Уровень(изделия, опыта, ресурса и тп)
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, PartialOrd, Ord)]
 pub enum Tier {
     NoTier, // уникальные штуки
     T1,
@@ -39,6 +39,22 @@ impl fmt::Display for Tier {
             Tier::T1     => write!(f, "{}", "1 разряда"),
             Tier::T2     => write!(f, "{}", "2 разряда"),
             Tier::T3     => write!(f, "{}", "3 разряда"),
+        }
+    }
+}
+
+/// В каком состоянии строение
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum TaskStatus {
+    Constructing, // Строится
+    Ready, // Готово
+}
+
+impl fmt::Display for TaskStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TaskStatus::Constructing => write!(f, "{}", "Строится"),
+            TaskStatus::Ready        => write!(f, "{}", "Готово"),
         }
     }
 }
