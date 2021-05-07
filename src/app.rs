@@ -171,6 +171,7 @@ impl Default for SpaceScreenState {
     }
 }
 
+
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 pub struct GlavblockApp {
     pub label: String,
@@ -180,6 +181,37 @@ pub struct GlavblockApp {
     pub resource_loaders: HashMap<String, mpsc::Receiver<Vec<u8>>>,
     pub current_screen: ScreenId,
     pub space_screen: SpaceScreenState,
+}
+
+impl Default for GlavblockApp {
+    fn default() -> Self {
+        let mut world = World::default();
+        let mut resources = Resources::default();
+
+        // Заглушка для техпроцессов, чтобы алгоритмы подсчета не орали что у тебя нету постройки "Stationary::None"
+        // которая на самом деле означает отсутствие станка
+        world.push((
+            Stationary::None,
+            stationary_size(Stationary::None),
+            TaskStatus::Ready,
+        ));
+        let resource_loaders = HashMap::new ();
+        let textures = HashMap::new ();
+        let current_screen = ScreenId::ScreenResources;
+        let space_screen = SpaceScreenState::default();
+        resources.insert(BuildPowerPool::new());
+        init_colony(&mut world);
+        Self {
+            // Example stuff:
+            label: "Главблок!".to_owned(),
+            world,
+            resources,
+            textures,
+            resource_loaders,
+            current_screen,
+            space_screen,
+        }
+    }
 }
 
 impl GlavblockApp {
@@ -253,16 +285,14 @@ impl GlavblockApp {
             }
         });
         match self.current_screen {
-            ScreenId::ScreenResources => {
-                self.resources_screen(ctx)
-            },
-            ScreenId::ScreenDemography => {}
-            ScreenId::ScreenSpace => {
-                self.space_screen(ctx)
-            }
-            ScreenId::ScreenTasks => {
-                self.tasks_screen(ctx)
-            },
+            ScreenId::ScreenResources =>
+                self.resources_screen(ctx),
+            ScreenId::ScreenDemography =>
+                self.demography_screen(ctx),
+            ScreenId::ScreenSpace =>
+                self.space_screen(ctx),
+            ScreenId::ScreenTasks =>
+                self.tasks_screen(ctx),
         }
     }
 
@@ -287,6 +317,7 @@ impl GlavblockApp {
                         }
                     }
                 );
+            ui.separator ();
             if ui.button("Смена").clicked() {
                 turn(&mut self.world, &mut self.resources);
             }
@@ -375,6 +406,7 @@ impl GlavblockApp {
                 }
             });
 
+            ui.separator();
             if ui.button("Смена").clicked() {
                 turn(&mut self.world, &mut self.resources);
             };
@@ -543,41 +575,36 @@ impl GlavblockApp {
                     };
                 }
             );
+            ui.separator ();
             if ui.button("Смена").clicked() {
                 turn(&mut self.world, &mut self.resources);
             };
         });
     }
-}
 
-impl Default for GlavblockApp {
-    fn default() -> Self {
-        let mut world = World::default();
-        let mut resources = Resources::default();
 
-        // Заглушка для техпроцессов, чтобы алгоритмы подсчета не орали что у тебя нету постройки "Stationary::None"
-        // которая на самом деле означает отсутствие станка
-        world.push((
-            Stationary::None,
-            stationary_size(Stationary::None),
-            TaskStatus::Ready,
-        ));
-        let resource_loaders = HashMap::new ();
-        let textures = HashMap::new ();
-        let current_screen = ScreenId::ScreenResources;
-        let space_screen = SpaceScreenState::default();
-        resources.insert(BuildPowerPool::new());
-        init_colony(&mut world);
-        Self {
-            // Example stuff:
-            label: "Главблок!".to_owned(),
-            world,
-            resources,
-            textures,
-            resource_loaders,
-            current_screen,
-            space_screen,
-        }
+    fn demography_screen (
+        &mut self,
+        ctx: &CtxRef,
+    ) {
+        let people = people_by_profession(&mut self.world);
+        CentralPanel::default().show(ctx, |ui| {
+            let mut rows: Vec<String> = Vec::new();
+            for ((prof, tier), count) in people {
+                rows.push(format!("{} {} - {} чел", prof, tier, count));
+            };
+            rows.sort();
+            for row in rows {
+                 if ui.button(
+                    row
+                 ).clicked () {
+                 }
+            }
+            ui.separator();
+            if ui.button("Смена").clicked() {
+                turn(&mut self.world, &mut self.resources);
+            };
+        });
     }
 }
 

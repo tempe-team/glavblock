@@ -74,12 +74,12 @@ pub fn spawn_comrad(
 /// Сколько у нас людей по профессиям
 pub fn people_by_profession(
     world: &mut World,
-) -> HashMap<Profession, usize> {
+) -> HashMap<(Profession, Tier), usize> {
     let mut result = HashMap::new();
-    let mut query = <&Profession>::query();
-    for prof in query.iter(world) {
+    let mut query = <(&Profession, &Tier)>::query();
+    for (prof, tier) in query.iter(world) {
         let val = result
-            .entry(*prof)
+            .entry((*prof, *tier))
             .or_insert(0);
         *val += 1;
     }
