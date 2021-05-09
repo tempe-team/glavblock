@@ -30,6 +30,7 @@ use eframe::{
 use legion::*;
 
 use crate::core::*;
+use crate::events::*;
 use crate::production::*;
 use crate::resources::*;
 use crate::storage::*;
@@ -171,7 +172,6 @@ impl Default for SpaceScreenState {
     }
 }
 
-
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 pub struct GlavblockApp {
     pub label: String,
@@ -200,6 +200,12 @@ impl Default for GlavblockApp {
         let current_screen = ScreenId::ScreenResources;
         let space_screen = SpaceScreenState::default();
         resources.insert(BuildPowerPool::new());
+        resources.insert(SamosborCounter(0));
+        resources.insert(TurnCounter(0));
+        let episodes_happened: HashSet<EpisodeId> = HashSet::new();
+        resources.insert(episodes_happened);
+        let tags_happened: HashSet<EpisodeTag> = HashSet::new();
+        resources.insert(tags_happened);
         init_colony(&mut world);
         Self {
             // Example stuff:
@@ -528,7 +534,7 @@ impl GlavblockApp {
                             for room in rooms
                                 .iter()
                                 .filter(
-                                    |(entity, (atype, _, _, _) )| include_purposes.contains(atype)
+                                    |(_, (atype, _, _, _) )| include_purposes.contains(atype)
                                 ) {
                                     result.push((
                                         *(room.0),

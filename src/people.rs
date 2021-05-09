@@ -60,15 +60,14 @@ pub fn spawn_comrad(
     tier: Tier,
     room: Entity,
 ) -> Entity {
-    let entity = world.push ((
+    world.push((
         prof,
         tier,
         BelongsToRoom(room),
         AreaOccupied(COMRAD_RENTED_PLACE),
         Satiety(100),
         Mood(5),
-    ));
-    entity
+    ))
 }
 
 /// Сколько у нас людей по профессиям

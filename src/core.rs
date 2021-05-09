@@ -35,10 +35,10 @@ pub enum Tier {
 impl fmt::Display for Tier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Tier::NoTier => write!(f, "{}", "без разряда"),
-            Tier::T1     => write!(f, "{}", "1 разряда"),
-            Tier::T2     => write!(f, "{}", "2 разряда"),
-            Tier::T3     => write!(f, "{}", "3 разряда"),
+            Tier::NoTier => write!(f, "без разряда"),
+            Tier::T1     => write!(f, "1 разряда"),
+            Tier::T2     => write!(f, "2 разряда"),
+            Tier::T3     => write!(f, "3 разряда"),
         }
     }
 }
@@ -53,8 +53,28 @@ pub enum TaskStatus {
 impl fmt::Display for TaskStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TaskStatus::Constructing => write!(f, "{}", "Строится"),
-            TaskStatus::Ready        => write!(f, "{}", "Готово"),
+            TaskStatus::Constructing => write!(f, "Строится"),
+            TaskStatus::Ready        => write!(f, "Готово"),
         }
     }
 }
+
+/// Путь к некоторому файлу
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FilePath (String);
+
+/// Как партия относится к игроку
+pub enum PartyFavor {
+    VragNaroda, // В любой момент могут выслать ликвдаторов
+    Unreliable, // Неблагонадежный. Партия склонна делать проблемы
+    Neutral, // Партии пофиг на тебя
+    Trustworthy, // Благонадежный. Партия благоволит тебе и иногда будет решать твои проблемы.
+    Loyal, // Преданный. Тебя считают хорошим мальчиком.
+}
+
+
+/// Сколько самосборов пережил блок
+pub struct SamosborCounter(pub usize);
+
+/// Сколько смен пережил блок
+pub struct TurnCounter(pub usize);

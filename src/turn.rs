@@ -35,10 +35,10 @@ fn calc_buildpower(
         &Tier,
     )>::query();
     for (prof, tier) in people_query.iter(world) {
-        let human_bp = tier2comrad_buildpower(tier.clone());
+        let human_bp = tier2comrad_buildpower(*tier);
         let by_tier_hm = buildpower_pool
             .entry(*prof)
-            .or_insert(HashMap::new());
+            .or_insert_with(HashMap::new);
 
         let bp = by_tier_hm
             .entry(*tier)
@@ -104,10 +104,10 @@ pub fn process_tasks(
                 .unwrap_or(&mut ppl_bp_);
             // Какую по факту силу мы можем освоить
             let bp_to_withdraw = min(
-                stat_bp.clone(),
+                *stat_bp,
                 min(
-                    ppl_bp.clone(),
-                    bp.clone(),
+                    *ppl_bp,
+                    *bp,
                 )
             );
             *stat_bp -= bp_to_withdraw;
@@ -116,7 +116,7 @@ pub fn process_tasks(
             progress.bp_invested += bp_to_withdraw;
             if progress.bp_invested >= progress.bp_required {
                 *status = TaskStatus::Ready;
-                delete_progresses.insert(entity.clone());
+                delete_progresses.insert(*entity);
             }
         }
     };
@@ -143,7 +143,7 @@ pub fn hunger_tick(
         }
         // ниже ста - голод - минус настроение
         if sat.0 < 100 {
-            mood.0.checked_sub(1);
+            let _ = mood.0.checked_sub(1);
         }
     }
     for e in died_by_hunger.iter() {
@@ -157,12 +157,12 @@ pub fn consume_concentrat(
     _resources: &mut Resources,
 ) {
     // сколько есть на складе
-    let mut t1_conc_amount = how_much_we_have(
+    let mut conc_amount = how_much_we_have(
         world,
         Resource::Concentrat,
     );
     // Сколько выдано
-    let mut t1_conc_writeroff = 0;
+    let mut conc_writeroff = 0;
     // имеет настроение = человек.
     // да, знаю, зашибись признак.
     let mut query = <(
@@ -171,13 +171,13 @@ pub fn consume_concentrat(
     )>::query();
 
     for (mood, sat) in query.iter_mut(world){
-        if t1_conc_amount.0 <= 0 {
+        if conc_amount.0  == 0 {
             // Не дали пожрать. Настроение
             // от такого ухудшается.
-            mood.0.checked_sub(1);
+            let _ = mood.0.checked_sub(1);
         } else {
-            t1_conc_amount.0 -= 1;
-            t1_conc_writeroff += 1;
+            conc_amount.0 -= 1;
+            conc_writeroff += 1;
             mood.0 += 1;
             sat.0 += 10;
         }
@@ -185,7 +185,7 @@ pub fn consume_concentrat(
     let rest = writeoff(
         world,
         Resource::Concentrat,
-        RealUnits(t1_conc_writeroff),
+        RealUnits(conc_writeroff),
     );
     // не получилось списать все. Ну ок, списываем что есть.
     if rest.0 != 0 {
