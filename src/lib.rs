@@ -11,6 +11,7 @@ mod area;
 mod turn;
 mod assets;
 mod queries;
+mod events;
 
 pub use app::GlavblockApp;
 
@@ -28,7 +29,6 @@ pub fn init_panic_hook() {
 
 // ----------------------------------------------------------------------------
 // When compiling for web:
-
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
 

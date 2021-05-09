@@ -134,10 +134,10 @@ pub fn install_germ(
     purpose: AreaType,
 ) -> Entity {
     world.push((
-        germ.clone(),
+        germ,
         TaskPriority(0),
         TaskStatus::Constructing,
-        task_meta2progress(germ_requirements(germ.clone())),
+        task_meta2progress(germ_requirements(germ)),
         purpose,
         germ_capacity(germ),
     ))
@@ -438,6 +438,14 @@ pub fn germ_requirements(
     }
 }
 
+/// Чего не хватает
+pub type WhatNotEnough = (
+    HashSet<Stationary>,
+    HashSet<(Profession, Tier)>,
+    HashMap<Resource, RealUnits>,
+    bool // Есть ли помещение для этого всего
+);
+
 /// Можем ли мы начать постройку этой стационарки
 /// И чего нам не хватает для того чтобы построить
 /// Ok(()) означает что всего хватает.
@@ -445,12 +453,7 @@ pub fn can_build_stationary (
     world: &mut World,
     exist_rsrcs: HashMap<Resource, RealUnits>,
     stationary: Stationary,
-) -> Result<Entity, (
-    HashSet<Stationary>,
-    HashSet<(Profession, Tier)>,
-    HashMap<Resource, RealUnits>,
-    bool // Есть ли помещение для этого всего
-)> {
+) -> Result<Entity, WhatNotEnough> {
     let requrements = stationary_requirements(stationary);
     let mut req_stnrs = HashSet::new();
     requrements
@@ -496,7 +499,10 @@ pub fn can_build_stationary (
         res_diff.is_empty() &&
         room.is_some()
     {
-        Ok(room.unwrap())
+        Ok(match room {
+            Some(a) => a,
+            _ => unreachable!(),
+        })
     } else {
         Err((
             diff2hset(req_stnrs.difference(&exist_stnrs)),
@@ -507,9 +513,9 @@ pub fn can_build_stationary (
     }
 }
 
-pub fn diff2hset<'a, V: Copy+Eq+Hash>(
-    diff: Difference<'a, V, RandomState>
-) -> HashSet<V> {
+pub fn diff2hset<V>(
+    diff: Difference<'_, V, RandomState>
+) -> HashSet<V> where V: Copy + Eq + Hash {
     let mut result = HashSet::new();
     for v in diff {
         result.insert(*v);
@@ -552,7 +558,7 @@ pub fn start_build_task(
     _priority: TaskPriority, // TODO: приоритет построек
 ) {
     let required_resources = stationary_required_resources(stationary);
-    writeoff_bunch(world, required_resources);
+    let _ = writeoff_bunch(world, required_resources);
     let requirements = stationary_requirements(stationary);
     world.push((
         stationary,

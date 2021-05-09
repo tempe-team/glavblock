@@ -74,11 +74,11 @@ pub fn rooms_with_space(
     )>::query();
     let mut areas = Vec::new();
     for (entity, area_type, _) in query.iter(world).filter (|(_,_, status)| **status == TaskStatus::Ready) {
-                                                            areas.push((entity.clone(), area_type.clone()));
+                                                            areas.push((*entity, *area_type));
                                                             };
     let mut result = Vec::new();
     for (entity, area_type) in areas.iter() {
-        let fspace = get_room_free_space(world, entity.clone());
+        let fspace = get_room_free_space(world, *entity);
         result.push((*area_type, fspace));
     };
     result
@@ -89,12 +89,11 @@ pub fn get_room_free_space(
     world: &mut World,
     room: Entity,
 ) -> AreaFree {
-    let AreaCapacity (capacity) = world
+    let AreaCapacity (capacity) = *world
         .entry(room)
         .unwrap()
         .into_component::<AreaCapacity>()
-        .unwrap()
-        .clone();
+        .unwrap();
     let mut query = <(
         &BelongsToRoom,
         &AreaOccupied,
@@ -141,9 +140,8 @@ pub fn get_sufficent_room(
 
     // Собираем заполненность помещений
     for (room, volume) in volumeq.iter(world) {
-        match areas.get_mut(&room.0) {
-            Some(free) => free.0 += volume.0,
-            None => (),
+        if let Some(free) = areas.get_mut(&room.0) {
+            free.0 += volume.0
         }
     };
 
@@ -184,12 +182,12 @@ pub fn all_rooms_with_space(
     )>::query();
     for (entity, atype, capacity, _) in areasq
         .iter(world)
-        .filter(|(_, artype, _, status)| **status == TaskStatus::Ready)
+        .filter(|(_, _, _, status)| **status == TaskStatus::Ready)
     {
         result.insert(
             *entity,
-            ( atype.clone(),
-              capacity.clone(),
+            ( *atype,
+              *capacity,
               AreaFree(capacity.0),
               AreaOccupied(0),
             )
@@ -203,14 +201,11 @@ pub fn all_rooms_with_space(
 
     // Собираем заполненность помещений
     for (room, volume) in volumeq.iter(world) {
-        match result.get_mut(&room.0) {
-            Some(room_) => {
-                // свободного пространства меньше на величину объекта
-                room_.2.0 -= volume.0;
-                // а заполненного соотв больше
-                room_.3.0 += volume.0;
-            },
-            None => (),
+        if let Some(room_) = result.get_mut(&room.0) {
+            // свободного пространства меньше на величину объекта
+            room_.2.0 -= volume.0;
+            // а заполненного соотв больше
+            room_.3.0 += volume.0;
         }
     };
 

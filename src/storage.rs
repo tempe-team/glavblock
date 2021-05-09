@@ -9,7 +9,7 @@ use crate::core::*;
 use crate::resources::*;
 
 /// Вещественные единицы (количество ресурса)
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RealUnits (pub usize);
 
 impl SubAssign for RealUnits {
@@ -31,9 +31,9 @@ impl Sub for RealUnits {
     }
 }
 
-impl Into<i32> for RealUnits {
-    fn into(self) -> i32 {
-        self.0 as i32
+impl From<RealUnits> for i32 {
+    fn from(units: RealUnits) -> Self {
+        units.0 as i32
     }
 }
 
@@ -100,7 +100,7 @@ pub fn put_resource(
     amount: RealUnits,
 ) -> RealUnits {
     let piece_size = get_piece_size(resource);
-    let mut amount_ = amount.clone();
+    let mut amount_ = amount;
     let rooms =
         get_rooms_for_divisible_load(
             world,
@@ -113,11 +113,11 @@ pub fn put_resource(
         world.push(
             (
                 resource,
-                BelongsToRoom(room.clone()),
+                BelongsToRoom(*room),
                 AreaOccupied(to_put_here),
             )
         );
-        if amount.0 <= 0 { break };
+        if amount.0 == 0 { break };
     };
     amount_
 }
@@ -134,7 +134,7 @@ pub fn writeoff (
         &mut AreaOccupied,
     )>::query();
     let piece_size = get_piece_size(resource);
-    let mut amount_ = amount.clone();
+    let mut amount_ = amount;
     let mut empty_containers = Vec::new();
     for (entity, _, occupied) in
         writeoff_query
@@ -146,7 +146,7 @@ pub fn writeoff (
             );
             occupied.0 -= to_get_from_here;
             amount_.0 -= to_get_from_here / piece_size.0;
-            if occupied.0 <= 0 {
+            if occupied.0 == 0 {
                 empty_containers.push(*entity);
             };
         };
